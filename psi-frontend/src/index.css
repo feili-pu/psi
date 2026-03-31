@@ -1,0 +1,185 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* 专业菜单样式 */
+.professional-menu {
+  font-size: 14px !important;
+}
+
+.professional-menu .ant-menu-item {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 4px 0 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.professional-menu .ant-menu-submenu {
+  margin: 4px 0 !important;
+}
+
+.professional-menu .ant-menu-submenu-title {
+  height: 44px !important;
+  line-height: 44px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* 悬停效果 */
+.professional-menu .ant-menu-item:hover,
+.professional-menu .ant-menu-submenu-title:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 选中状态 */
+.professional-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+.professional-menu .ant-menu-item-selected::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 4px !important;
+  background: #ffffff !important;
+  border-radius: 0 2px 2px 0 !important;
+}
+
+/* 展开的子菜单 */
+.professional-menu .ant-menu-submenu-open > .ant-menu-submenu-title {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* 子菜单样式 */
+.professional-menu .ant-menu-sub {
+  background-color: #0f172a !important;
+  border-radius: 8px !important;
+  margin: 4px 0 8px 0 !important;
+  padding: 8px 0 !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.professional-menu .ant-menu-sub .ant-menu-item {
+  height: 36px !important;
+  line-height: 36px !important;
+  margin: 2px 8px !important;
+  padding-left: 40px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+}
+
+.professional-menu .ant-menu-sub .ant-menu-item:hover {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3) !important;
+}
+
+.professional-menu .ant-menu-sub .ant-menu-item-selected {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* 图标样式 */
+.professional-menu .ant-menu-item-icon,
+.professional-menu .ant-menu-submenu-title .ant-menu-item-icon {
+  font-size: 16px !important;
+  margin-right: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.professional-menu .ant-menu-item:hover .ant-menu-item-icon,
+.professional-menu .ant-menu-submenu-title:hover .ant-menu-item-icon {
+  transform: scale(1.1) !important;
+}
+
+/* 展开箭头样式 */
+.professional-menu .ant-menu-submenu-arrow {
+  transition: all 0.3s ease !important;
+}
+
+.professional-menu .ant-menu-submenu-open .ant-menu-submenu-arrow {
+  transform: rotate(180deg) !important;
+}

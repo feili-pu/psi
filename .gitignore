@@ -1,0 +1,11 @@
+.idea/
+.vscode/
+
+# Backend build output
+psi-behindend/target/
+psi-behindend/.idea/
+
+# Common logs and OS files
+*.log
+.DS_Store
+Thumbs.db
