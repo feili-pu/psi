@@ -239,11 +239,15 @@ public class SalesOrderController {
     // 发货
     @PostMapping("/{id}/ship")
     public Map<String, Object> shipOrder(@PathVariable Long id) {
-        boolean success = orderService.shipOrder(id);
-        
         Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "订单已发货" : "发货失败");
+        try {
+            boolean success = orderService.shipOrder(id);
+            result.put("success", success);
+            result.put("message", success ? "订单已发货" : "发货失败");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "发货失败: " + e.getMessage());
+        }
         return result;
     }
 
@@ -251,11 +255,15 @@ public class SalesOrderController {
     @PostMapping("/{id}/deliver")
      @Operation(summary = "更新订单明细", description = "更新订单明细的交货数量")
     public Map<String, Object> deliverOrder(@PathVariable Long id) {
-        boolean success = orderService.deliverOrder(id);
-        
         Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "订单已交付" : "交付失败");
+        try {
+            boolean success = orderService.deliverOrder(id);
+            result.put("success", success);
+            result.put("message", success ? "订单已交付" : "交付失败");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "交付失败: " + e.getMessage());
+        }
         return result;
     }
 
@@ -273,11 +281,15 @@ public class SalesOrderController {
     // 取消订单
     @PostMapping("/{id}/cancel")
     public Map<String, Object> cancelOrder(@PathVariable Long id) {
-        boolean success = orderService.cancelOrder(id);
-        
         Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "订单已取消" : "取消失败");
+        try {
+            boolean success = orderService.cancelOrder(id);
+            result.put("success", success);
+            result.put("message", success ? "订单已取消" : "取消失败");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "取消失败: " + e.getMessage());
+        }
         return result;
     }
 

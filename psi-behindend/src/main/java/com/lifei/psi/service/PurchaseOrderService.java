@@ -2,6 +2,10 @@ package com.lifei.psi.service;
 
 import com.lifei.psi.entity.PurchaseOrder;
 import com.lifei.psi.entity.PurchaseOrderItem;
+import com.lifei.psi.entity.InventoryReceipt;
+import com.lifei.psi.entity.InventoryReceiptItem;
+import com.lifei.psi.mapper.InventoryReceiptMapper;
+import com.lifei.psi.mapper.MasterDataMapper;
 import com.lifei.psi.mapper.PurchaseOrderMapper;
 import com.lifei.psi.mapper.PurchaseOrderItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,15 @@ public class PurchaseOrderService {
 
     @Autowired
     private PurchaseOrderItemMapper orderItemMapper;
+
+    @Autowired
+    private MasterDataMapper masterDataMapper;
+
+    @Autowired
+    private InventoryReceiptMapper receiptMapper;
+
+    @Autowired
+    private InventoryReceiptService receiptService;
 
     // 获取所有采购订单
     public List<PurchaseOrder> getAllOrders() {
@@ -140,7 +153,91 @@ public class PurchaseOrderService {
     }
 
     // 收货
+    @Transactional
     public boolean receiveOrder(Long id) {
+        PurchaseOrder order = orderMapper.findById(id);
+        if (order == null) {
+            throw new RuntimeException("采购订单不存在");
+        }
+        if ("RECEIVED".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus())) {
+            return true;
+        }
+        if (!"SHIPPED".equals(order.getStatus())) {
+            throw new RuntimeException("采购订单必须先发货后收货");
+        }
+
+        List<PurchaseOrderItem> orderItems = orderItemMapper.findByOrderId(id);
+        if (orderItems == null || orderItems.isEmpty()) {
+            throw new RuntimeException("采购订单没有明细，不能收货");
+        }
+
+        List<InventoryReceipt> existingReceipts = receiptMapper.findByPurchaseOrder(id);
+        if (existingReceipts != null && !existingReceipts.isEmpty()) {
+            boolean processed = false;
+            for (InventoryReceipt existingReceipt : existingReceipts) {
+                if ("CANCELLED".equals(existingReceipt.getStatus())) {
+                    continue;
+                }
+                if ("PENDING".equals(existingReceipt.getStatus()) && !receiptService.approveReceipt(existingReceipt.getId())) {
+                    throw new RuntimeException("已有入库单审核失败: " + existingReceipt.getReceiptNo());
+                }
+                InventoryReceipt latestReceipt = receiptMapper.findById(existingReceipt.getId());
+                if ("APPROVED".equals(latestReceipt.getStatus()) && !receiptService.processReceipt(latestReceipt.getId())) {
+                    throw new RuntimeException("已有入库单入库失败: " + latestReceipt.getReceiptNo());
+                }
+                processed = true;
+            }
+            if (!processed) {
+                throw new RuntimeException("采购订单只有已取消的入库单，不能收货");
+            }
+            for (PurchaseOrderItem orderItem : orderItems) {
+                orderItemMapper.updateReceivedQty(orderItem.getId(), safeQuantity(orderItem.getQuantity()));
+            }
+            return updateOrderStatus(id, "RECEIVED");
+        }
+
+        InventoryReceipt receipt = new InventoryReceipt();
+        receipt.setReceiptType("PURCHASE");
+        receipt.setWarehouseId(getDefaultWarehouseId());
+        receipt.setSupplierId(resolveSupplierId(order.getSupplierName()));
+        receipt.setPurchaseOrderId(order.getId());
+        receipt.setOperator(defaultOperator(order.getPurchaser()));
+        receipt.setStatus("PENDING");
+        receipt.setAutoGeneratePayable(true);
+        receipt.setPayableGenerated(false);
+        receipt.setRemarks("采购订单 " + order.getOrderNo() + " 收货自动生成入库单");
+
+        List<InventoryReceiptItem> receiptItems = new java.util.ArrayList<>();
+        for (PurchaseOrderItem orderItem : orderItems) {
+            BigDecimal quantity = safeQuantity(orderItem.getQuantity());
+            BigDecimal receivedQty = safeQuantity(orderItem.getReceivedQty());
+            BigDecimal quantityToReceive = quantity.subtract(receivedQty);
+            if (quantityToReceive.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            Long productId = resolveProductId(orderItem.getProductCode(), orderItem.getProductName());
+            InventoryReceiptItem receiptItem = new InventoryReceiptItem(null, productId, quantityToReceive, orderItem.getUnit());
+            receiptItem.setUnitPrice(orderItem.getUnitPrice() != null ? orderItem.getUnitPrice() : BigDecimal.ZERO);
+            receiptItem.setTotalAmount(quantityToReceive.multiply(receiptItem.getUnitPrice()));
+            receiptItem.setQualityStatus("QUALIFIED");
+            receiptItem.setRemarks("采购订单明细自动收货");
+            receiptItems.add(receiptItem);
+        }
+
+        if (receiptItems.isEmpty()) {
+            return updateOrderStatus(id, "RECEIVED");
+        }
+
+        InventoryReceipt createdReceipt = receiptService.createReceipt(receipt, receiptItems);
+        if (!receiptService.approveReceipt(createdReceipt.getId()) || !receiptService.processReceipt(createdReceipt.getId())) {
+            throw new RuntimeException("采购收货入库处理失败");
+        }
+
+        for (PurchaseOrderItem orderItem : orderItems) {
+            orderItemMapper.updateReceivedQty(orderItem.getId(), safeQuantity(orderItem.getQuantity()));
+        }
+
         return updateOrderStatus(id, "RECEIVED");
     }
 
@@ -151,6 +248,10 @@ public class PurchaseOrderService {
 
     // 取消订单
     public boolean cancelOrder(Long id) {
+        PurchaseOrder order = orderMapper.findById(id);
+        if (order != null && ("RECEIVED".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus()))) {
+            throw new RuntimeException("已收货或已完成的采购订单不能直接取消，请先做退货/红字处理");
+        }
         return updateOrderStatus(id, "CANCELLED");
     }
 
@@ -194,5 +295,46 @@ public class PurchaseOrderService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private Long getDefaultWarehouseId() {
+        Long warehouseId = masterDataMapper.findWarehouseIdByCode("WH001");
+        if (warehouseId == null) {
+            warehouseId = masterDataMapper.findDefaultWarehouseId();
+        }
+        if (warehouseId == null) {
+            throw new RuntimeException("未找到可用仓库，请先维护仓库主数据");
+        }
+        return warehouseId;
+    }
+
+    private Long resolveProductId(String productCode, String productName) {
+        if (isBlank(productCode)) {
+            throw new RuntimeException("产品缺少编码，无法匹配库存: " + productName);
+        }
+        Long productId = masterDataMapper.findProductIdByCode(productCode);
+        if (productId == null) {
+            throw new RuntimeException("产品编码未建档，无法匹配库存: " + productCode);
+        }
+        return productId;
+    }
+
+    private Long resolveSupplierId(String supplierName) {
+        if (isBlank(supplierName)) {
+            throw new RuntimeException("供应商名称为空，无法生成应付");
+        }
+        Long supplierId = masterDataMapper.findSupplierIdByName(supplierName);
+        if (supplierId == null) {
+            throw new RuntimeException("供应商未建档，无法生成应付: " + supplierName);
+        }
+        return supplierId;
+    }
+
+    private BigDecimal safeQuantity(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private String defaultOperator(String operator) {
+        return isBlank(operator) ? "系统" : operator;
     }
 }

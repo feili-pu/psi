@@ -209,11 +209,15 @@ public class PurchaseOrderController {
     // 收货
     @PostMapping("/{id}/receive")
     public Map<String, Object> receiveOrder(@PathVariable Long id) {
-        boolean success = orderService.receiveOrder(id);
-        
         Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "订单已收货" : "收货失败");
+        try {
+            boolean success = orderService.receiveOrder(id);
+            result.put("success", success);
+            result.put("message", success ? "订单已收货" : "收货失败");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "收货失败: " + e.getMessage());
+        }
         return result;
     }
 
@@ -231,11 +235,15 @@ public class PurchaseOrderController {
     // 取消订单
     @PostMapping("/{id}/cancel")
     public Map<String, Object> cancelOrder(@PathVariable Long id) {
-        boolean success = orderService.cancelOrder(id);
-        
         Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "订单已取消" : "取消失败");
+        try {
+            boolean success = orderService.cancelOrder(id);
+            result.put("success", success);
+            result.put("message", success ? "订单已取消" : "取消失败");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "取消失败: " + e.getMessage());
+        }
         return result;
     }
 

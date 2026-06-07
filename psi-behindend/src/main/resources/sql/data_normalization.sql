@@ -37,6 +37,7 @@ UPDATE product_assembly SET status = 'PENDING' WHERE status IS NULL OR status = 
 UPDATE product_disassembly SET status = 'PENDING' WHERE status IS NULL OR status = '';
 UPDATE serial_number_receipt SET status = 'PENDING' WHERE status IS NULL OR status = '';
 UPDATE purchase_payable SET status = 'UNPAID' WHERE status IS NULL OR status = '';
+UPDATE sales_receivable SET status = 'UNRECEIVED' WHERE status IS NULL OR status = '';
 
 -- 3. Recalculate document totals from their detail rows.
 UPDATE sales_quotation q
@@ -188,7 +189,90 @@ JOIN purchase_order po ON po.order_no = 'PO202412290006'
 WHERE s.supplier_code = 'SUP002'
   AND NOT EXISTS (SELECT 1 FROM purchase_payable WHERE payable_no = 'PP202412290006');
 
--- 8. Seed inventory check data using the current stock balance.
+-- 8. Backfill business documents and stock movements from existing order statuses.
+INSERT INTO sales_receivable (receivable_no, customer_name, sales_order_id, receivable_type, total_amount, received_amount, unreceived_amount, due_date, status, remarks)
+SELECT CONCAT('SR-', so.order_no), so.customer_name, so.id, 'NORMAL',
+       COALESCE(so.total_amount, 0), 0.00, COALESCE(so.total_amount, 0),
+       DATE_ADD(CURDATE(), INTERVAL 30 DAY),
+       CASE WHEN COALESCE(so.total_amount, 0) = 0 THEN 'RECEIVED' ELSE 'UNRECEIVED' END,
+       CONCAT('销售订单 ', so.order_no, ' 历史交付补应收')
+FROM sales_order so
+WHERE so.status IN ('SHIPPED', 'DELIVERED', 'COMPLETED')
+  AND NOT EXISTS (SELECT 1 FROM sales_receivable sr WHERE sr.sales_order_id = so.id);
+
+INSERT INTO inventory_receipt (receipt_no, receipt_type, warehouse_id, supplier_id, purchase_order_id, receipt_date, operator, total_quantity, total_amount, status, auto_generate_payable, payable_generated, remarks)
+SELECT CONCAT('AUTO-', po.order_no), 'PURCHASE', wh.id, s.id, po.id, COALESCE(po.order_date, NOW()),
+       COALESCE(NULLIF(po.purchaser, ''), '系统'),
+       SUM(COALESCE(NULLIF(poi.received_qty, 0), poi.quantity)),
+       SUM(COALESCE(NULLIF(poi.received_qty, 0), poi.quantity) * COALESCE(poi.unit_price, 0)),
+       'RECEIVED', TRUE, TRUE, CONCAT('采购订单 ', po.order_no, ' 历史收货补入库单')
+FROM purchase_order po
+JOIN purchase_order_item poi ON poi.order_id = po.id
+JOIN warehouse wh ON wh.warehouse_code = 'WH001'
+JOIN supplier s ON s.supplier_name = po.supplier_name
+WHERE po.status IN ('RECEIVED', 'COMPLETED')
+  AND NOT EXISTS (SELECT 1 FROM inventory_receipt r WHERE r.purchase_order_id = po.id)
+GROUP BY po.id, wh.id, s.id;
+
+INSERT INTO inventory_receipt_item (receipt_id, product_id, quantity, unit, unit_price, total_amount, batch_no, quality_status, remarks)
+SELECT r.id, p.id, COALESCE(NULLIF(poi.received_qty, 0), poi.quantity), poi.unit,
+       COALESCE(poi.unit_price, 0),
+       COALESCE(NULLIF(poi.received_qty, 0), poi.quantity) * COALESCE(poi.unit_price, 0),
+       CONCAT('AUTO-', po.order_no), 'QUALIFIED', '历史采购收货补明细'
+FROM inventory_receipt r
+JOIN purchase_order po ON po.id = r.purchase_order_id
+JOIN purchase_order_item poi ON poi.order_id = po.id
+JOIN product p ON p.product_code = poi.product_code
+WHERE r.receipt_no = CONCAT('AUTO-', po.order_no)
+  AND NOT EXISTS (
+    SELECT 1 FROM inventory_receipt_item i WHERE i.receipt_id = r.id AND i.product_id = p.id
+  );
+
+INSERT INTO purchase_payable (payable_no, supplier_id, purchase_order_id, receipt_id, payable_type, total_amount, paid_amount, unpaid_amount, due_date, status, remarks)
+SELECT CONCAT('PP-', po.order_no), r.supplier_id, po.id, r.id, 'NORMAL',
+       COALESCE(r.total_amount, po.total_amount, 0), 0.00, COALESCE(r.total_amount, po.total_amount, 0),
+       DATE_ADD(CURDATE(), INTERVAL 30 DAY),
+       CASE WHEN COALESCE(r.total_amount, po.total_amount, 0) = 0 THEN 'PAID' ELSE 'UNPAID' END,
+       CONCAT('采购订单 ', po.order_no, ' 历史收货补应付')
+FROM purchase_order po
+JOIN inventory_receipt r ON r.purchase_order_id = po.id
+WHERE po.status IN ('RECEIVED', 'COMPLETED')
+  AND NOT EXISTS (SELECT 1 FROM purchase_payable pp WHERE pp.purchase_order_id = po.id);
+
+INSERT INTO inventory_transaction (transaction_no, warehouse_id, product_id, transaction_type, business_type, reference_no, quantity, unit_cost, total_cost, balance_quantity, transaction_date, operator, remarks)
+SELECT CONCAT('ITP', LPAD(r.id, 8, '0'), LPAD(i.id, 6, '0')),
+       r.warehouse_id, i.product_id, 'IN', 'PURCHASE', r.receipt_no,
+       i.quantity, COALESCE(i.unit_price, 0), i.quantity * COALESCE(i.unit_price, 0),
+       COALESCE(inv.quantity, i.quantity), COALESCE(r.receipt_date, NOW()), r.operator, '历史采购入库补流水'
+FROM inventory_receipt r
+JOIN inventory_receipt_item i ON i.receipt_id = r.id
+LEFT JOIN inventory inv ON inv.warehouse_id = r.warehouse_id AND inv.product_id = i.product_id
+WHERE r.receipt_type = 'PURCHASE'
+  AND r.status = 'RECEIVED'
+  AND NOT EXISTS (
+    SELECT 1 FROM inventory_transaction t
+    WHERE t.reference_no = r.receipt_no AND t.product_id = i.product_id AND t.transaction_type = 'IN'
+  );
+
+INSERT INTO inventory_transaction (transaction_no, warehouse_id, product_id, transaction_type, business_type, reference_no, quantity, unit_cost, total_cost, balance_quantity, transaction_date, operator, remarks)
+SELECT CONCAT('ITS', LPAD(so.id, 8, '0'), LPAD(soi.id, 6, '0')),
+       wh.id, p.id, 'OUT', 'SALES_SHIPMENT', so.order_no,
+       soi.delivered_qty, COALESCE(inv.unit_cost, p.standard_cost, 0),
+       soi.delivered_qty * COALESCE(inv.unit_cost, p.standard_cost, 0),
+       COALESCE(inv.quantity, 0), COALESCE(so.order_date, NOW()), COALESCE(NULLIF(so.salesperson, ''), '系统'), '历史销售发货补流水'
+FROM sales_order so
+JOIN sales_order_item soi ON soi.order_id = so.id
+JOIN product p ON p.product_code = soi.product_code
+JOIN warehouse wh ON wh.warehouse_code = 'WH001'
+LEFT JOIN inventory inv ON inv.warehouse_id = wh.id AND inv.product_id = p.id
+WHERE so.status IN ('SHIPPED', 'DELIVERED', 'COMPLETED')
+  AND soi.delivered_qty > 0
+  AND NOT EXISTS (
+    SELECT 1 FROM inventory_transaction t
+    WHERE t.reference_no = so.order_no AND t.product_id = p.id AND t.transaction_type = 'OUT'
+  );
+
+-- 9. Seed inventory check data using the current stock balance.
 INSERT INTO inventory_check (check_no, warehouse_id, check_date, check_type, checker, status, total_gain_quantity, total_loss_quantity, total_gain_amount, total_loss_amount, remarks)
 SELECT 'IC202412300001', wh.id, NOW(), 'FULL', '赵仓管', 'PROCESSED', 0.00, 0.00, 0.00, 0.00, '主仓库期初库存盘点'
 FROM warehouse wh
@@ -204,7 +288,7 @@ WHERE c.check_no = 'IC202412300001'
     SELECT 1 FROM inventory_check_item i WHERE i.check_id = c.id AND i.product_id = inv.product_id
   );
 
--- 9. Seed material, product and serial-number workflows so every inventory page has coherent data.
+-- 10. Seed material, product and serial-number workflows so every inventory page has coherent data.
 INSERT INTO bom (bom_code, product_id, bom_version, bom_name, quantity, status, effective_date, remarks)
 SELECT 'BOM-WS001-001', p.id, '1.0', '工作站标准BOM', 1.00, 'ACTIVE', CURDATE(), '用于组装/拆解演示'
 FROM product p

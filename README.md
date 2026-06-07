@@ -64,10 +64,19 @@ spring.datasource.password=123456
 psi-behindend/src/main/resources/application.properties
 ```
 
-系统启动时会自动执行：
+为避免重启覆盖业务数据，后端启动时不会自动建库或重置数据。
+
+首次安装空库时，手动执行完整初始化脚本：
 
 ```text
 psi-behindend/src/main/resources/psi_database_init.sql
+```
+
+已有数据库升级时，先执行增量表结构补丁，再按需执行幂等数据修复脚本：
+
+```text
+psi-behindend/src/main/resources/sql/schema_patch.sql
+psi-behindend/src/main/resources/sql/data_normalization.sql
 ```
 
 默认管理员账号：
@@ -139,6 +148,7 @@ http://localhost:8080
 - `/api/auth/*`
 - `/api/quotations`
 - `/api/orders`
+- `/api/sales-receivables`
 - `/api/purchase/requests`
 - `/api/purchase/inquiries`
 - `/api/purchase/quotations`
@@ -160,6 +170,9 @@ http://localhost:8080
 ## 本次修复重点
 
 - 修复销售报价/订单、采购订单等新建后状态为空的问题，后端创建时会自动写入默认状态。
+- 销售订单发货会扣减库存并记录库存流水，交付会自动生成销售应收。
+- 采购订单收货会生成采购入库单、库存流水和采购应付。
+- 后端启动不再自动执行删表初始化脚本，避免重启覆盖真实业务数据。
 - 修复采购订单确认、生产、发货、收货、完成、取消等流程接口映射。
 - 采购申请、询价、供应商报价、采购比价、采购应付改为调用后端真实接口。
 - 库存相关页面统一接入后端真实接口，不再使用页面内模拟数据。
@@ -174,6 +187,7 @@ http://localhost:8080
 
 - 后端服务已启动并监听 `8080` 端口。
 - MySQL 已启动，账号密码与 `application.properties` 一致。
+- 首次使用前已执行 `psi_database_init.sql`，既有库升级已执行 `schema_patch.sql`。
 - 前端请求地址仍为 `http://localhost:8080`。
 
 如果接口返回 401 或 403，请重新登录，并检查当前用户角色是否拥有对应权限。

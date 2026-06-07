@@ -4,6 +4,7 @@ import com.lifei.psi.entity.SalesOrder;
 import com.lifei.psi.entity.SalesOrderItem;
 import com.lifei.psi.entity.SalesQuotation;
 import com.lifei.psi.entity.SalesQuotationItem;
+import com.lifei.psi.mapper.MasterDataMapper;
 import com.lifei.psi.mapper.SalesOrderMapper;
 import com.lifei.psi.mapper.SalesOrderItemMapper;
 import com.lifei.psi.mapper.SalesQuotationMapper;
@@ -31,6 +32,15 @@ public class SalesOrderService {
 
     @Autowired
     private SalesQuotationItemMapper quotationItemMapper;
+
+    @Autowired
+    private MasterDataMapper masterDataMapper;
+
+    @Autowired
+    private InventoryService inventoryService;
+
+    @Autowired
+    private SalesReceivableService receivableService;
 
     // 获取所有订单
     public List<SalesOrder> getAllOrders() {
@@ -199,12 +209,67 @@ public class SalesOrderService {
     }
 
     // 发货
+    @Transactional
     public boolean shipOrder(Long id) {
+        SalesOrder order = orderMapper.findById(id);
+        if (order == null) {
+            throw new RuntimeException("销售订单不存在");
+        }
+        if ("SHIPPED".equals(order.getStatus()) || "DELIVERED".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus())) {
+            return true;
+        }
+        if (!"CONFIRMED".equals(order.getStatus()) && !"PRODUCING".equals(order.getStatus())) {
+            throw new RuntimeException("只有已确认或生产中的销售订单才能发货");
+        }
+
+        Long warehouseId = getDefaultWarehouseId();
+        List<SalesOrderItem> items = orderItemMapper.findByOrderId(id);
+        if (items == null || items.isEmpty()) {
+            throw new RuntimeException("销售订单没有明细，不能发货");
+        }
+
+        for (SalesOrderItem item : items) {
+            BigDecimal quantity = safeQuantity(item.getQuantity());
+            BigDecimal deliveredQty = safeQuantity(item.getDeliveredQty());
+            BigDecimal quantityToShip = quantity.subtract(deliveredQty);
+            if (quantityToShip.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            Long productId = resolveProductId(item.getProductCode(), item.getProductName());
+            boolean success = inventoryService.issueInventory(
+                warehouseId,
+                productId,
+                quantityToShip,
+                "SALES_SHIPMENT",
+                order.getOrderNo(),
+                defaultOperator(order.getSalesperson())
+            );
+            if (!success) {
+                throw new RuntimeException("库存不足，无法发货: " + item.getProductName());
+            }
+            orderItemMapper.updateDeliveredQty(item.getId(), quantity);
+        }
+
         return updateOrderStatus(id, "SHIPPED");
     }
 
     // 交付
+    @Transactional
     public boolean deliverOrder(Long id) {
+        SalesOrder order = orderMapper.findById(id);
+        if (order == null) {
+            throw new RuntimeException("销售订单不存在");
+        }
+        if ("DELIVERED".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus())) {
+            receivableService.createFromOrder(order);
+            return true;
+        }
+        if (!"SHIPPED".equals(order.getStatus())) {
+            throw new RuntimeException("销售订单必须先发货后交付");
+        }
+
+        receivableService.createFromOrder(order);
         return updateOrderStatus(id, "DELIVERED");
     }
 
@@ -215,6 +280,10 @@ public class SalesOrderService {
 
     // 取消订单
     public boolean cancelOrder(Long id) {
+        SalesOrder order = orderMapper.findById(id);
+        if (order != null && ("SHIPPED".equals(order.getStatus()) || "DELIVERED".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus()))) {
+            throw new RuntimeException("已发货、已交付或已完成的销售订单不能直接取消，请先做红字/退货处理");
+        }
         return updateOrderStatus(id, "CANCELLED");
     }
 
@@ -256,5 +325,35 @@ public class SalesOrderService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private Long getDefaultWarehouseId() {
+        Long warehouseId = masterDataMapper.findWarehouseIdByCode("WH001");
+        if (warehouseId == null) {
+            warehouseId = masterDataMapper.findDefaultWarehouseId();
+        }
+        if (warehouseId == null) {
+            throw new RuntimeException("未找到可用仓库，请先维护仓库主数据");
+        }
+        return warehouseId;
+    }
+
+    private Long resolveProductId(String productCode, String productName) {
+        if (isBlank(productCode)) {
+            throw new RuntimeException("产品缺少编码，无法匹配库存: " + productName);
+        }
+        Long productId = masterDataMapper.findProductIdByCode(productCode);
+        if (productId == null) {
+            throw new RuntimeException("产品编码未建档，无法匹配库存: " + productCode);
+        }
+        return productId;
+    }
+
+    private BigDecimal safeQuantity(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private String defaultOperator(String operator) {
+        return isBlank(operator) ? "系统" : operator;
     }
 }
