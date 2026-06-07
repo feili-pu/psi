@@ -5,7 +5,7 @@
   --auth-top-padding: calc(16px + env(safe-area-inset-top, 0px));
   --auth-bottom-padding: calc(16px + env(safe-area-inset-bottom, 0px));
   --app-top-padding: env(safe-area-inset-top, 0px);
-  --app-header-safe-top: max(32px, env(safe-area-inset-top, 0px));
+  --app-header-safe-top: max(16px, env(safe-area-inset-top, 0px));
   --app-bottom-padding: env(safe-area-inset-bottom, 0px);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -344,7 +344,7 @@ a {
 }
 
 .app-header {
-  height: calc(64px + var(--app-header-safe-top));
+  height: calc(56px + var(--app-header-safe-top));
   padding: var(--app-header-safe-top) 24px 0;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
@@ -352,7 +352,7 @@ a {
 }
 
 .app-header-inner {
-  height: 64px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -390,14 +390,16 @@ a {
 }
 
 .app-brand strong {
-  line-height: 1.2;
-  font-size: 16px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 15px;
 }
 
 .app-brand span {
-  margin-top: 2px;
+  margin-top: 4px;
   color: #64748b;
   font-size: 12px;
+  line-height: 14px;
 }
 
 .header-icon-button {
@@ -659,12 +661,13 @@ a {
   }
 
   .app-header {
-    --app-header-safe-top: max(32px, env(safe-area-inset-top, 0px));
+    --app-header-safe-top: max(14px, env(safe-area-inset-top, 0px));
     padding-right: 14px;
     padding-left: 14px;
   }
 
   .app-brand span {
-    display: none;
+    display: block;
+    font-size: 11px;
   }
 }
