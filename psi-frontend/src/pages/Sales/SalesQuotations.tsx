@@ -384,18 +384,19 @@ const SalesQuotations: React.FC = () => {
       key: 'status',
       width: 150,
       render: (status: string, record: SalesQuotation) => {
-        const config = statusConfig[status];
+        const normalizedStatus = status || QuotationStatus.DRAFT;
+        const config = statusConfig[normalizedStatus];
         return (
           <Space direction="vertical" size="small">
-            <Tag color={config?.color || 'default'}>{config?.text || status}</Tag>
+            <Tag color={config?.color || 'default'}>{config?.text || normalizedStatus}</Tag>
             {/* 状态操作按钮 */}
             <Space size="small">
-              {status === QuotationStatus.DRAFT && (
+              {normalizedStatus === QuotationStatus.DRAFT && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'send')}>
                   发送
                 </Button>
               )}
-              {status === QuotationStatus.SENT && (
+              {normalizedStatus === QuotationStatus.SENT && (
                 <>
                   <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'accept')}>
                     接受
@@ -405,7 +406,7 @@ const SalesQuotations: React.FC = () => {
                   </Button>
                 </>
               )}
-              {status === QuotationStatus.ACCEPTED && (
+              {normalizedStatus === QuotationStatus.ACCEPTED && (
                 <Button size="small" type="link" onClick={() => handleCreateOrder(record.id!)}>
                   转订单
                 </Button>
@@ -454,7 +455,7 @@ const SalesQuotations: React.FC = () => {
   // 统计数据
   const statistics = {
     total: quotations.length,
-    draft: quotations.filter(q => q.status === QuotationStatus.DRAFT).length,
+    draft: quotations.filter(q => !q.status || q.status === QuotationStatus.DRAFT).length,
     sent: quotations.filter(q => q.status === QuotationStatus.SENT).length,
     accepted: quotations.filter(q => q.status === QuotationStatus.ACCEPTED).length,
     totalAmount: quotations.reduce((sum, quotation) => sum + (quotation.totalAmount || 0), 0)
@@ -622,8 +623,8 @@ const SalesQuotations: React.FC = () => {
                 <p><strong>报价日期：</strong>{selectedQuotation.quotationDate}</p>
                 <p><strong>有效期至：</strong>{selectedQuotation.validUntil}</p>
                 <p><strong>报价状态：</strong>
-                  <Tag color={statusConfig[selectedQuotation.status!]?.color || 'default'}>
-                    {statusConfig[selectedQuotation.status!]?.text || selectedQuotation.status}
+                  <Tag color={statusConfig[selectedQuotation.status || QuotationStatus.DRAFT]?.color || 'default'}>
+                    {statusConfig[selectedQuotation.status || QuotationStatus.DRAFT]?.text || selectedQuotation.status || QuotationStatus.DRAFT}
                   </Tag>
                 </p>
                 <p><strong>报价总额：</strong>

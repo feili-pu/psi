@@ -396,7 +396,7 @@ const SalesOrders: React.FC = () => {
             <Tag color={config?.color || 'default'}>{config?.text || status}</Tag>
             {/* 状态操作按钮 */}
             <Space size="small">
-              {status === OrderStatus.PENDING && (
+              {(status === OrderStatus.DRAFT || status === OrderStatus.PENDING) && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'confirm')}>
                   确认
                 </Button>

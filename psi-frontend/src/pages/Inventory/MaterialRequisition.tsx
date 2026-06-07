@@ -21,12 +21,10 @@ import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
-  DeleteOutlined,
   EyeOutlined,
   ExportOutlined,
   ShoppingOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   ExclamationCircleOutlined,
   SendOutlined
 } from '@ant-design/icons';
@@ -150,7 +148,7 @@ const mockMaterialRequisitions = [
 ];
 
 const MaterialRequisition: React.FC = () => {
-  const [requisitions, setRequisitions] = useState(mockMaterialRequisitions);
+  const [requisitions, setRequisitions] = useState<any[]>(mockMaterialRequisitions);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');

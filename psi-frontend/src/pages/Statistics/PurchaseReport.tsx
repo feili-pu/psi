@@ -36,8 +36,7 @@ import {
   PurchaseReportService,
   type PurchaseReportData,
   type SupplierRankingItem,
-  type PurchaserRankingItem,
-  type CategoryRankingItem 
+  type PurchaserRankingItem
 } from '../../services/statisticsService';
 import dayjs from 'dayjs';
 
@@ -144,7 +143,7 @@ const PurchaseReport: React.FC = () => {
       key: 'supplierName',
       width: 150,
       ellipsis: true,
-      render: (name: string, record, index) => (
+      render: (name: string, _record, index) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {index < 3 && <TrophyOutlined style={{ color: ['#ffd700', '#c0c0c0', '#cd7f32'][index], marginRight: '4px' }} />}
           <Tooltip title={name}>
@@ -240,7 +239,7 @@ const PurchaseReport: React.FC = () => {
       key: 'name',
       width: 100,
       ellipsis: true,
-      render: (name: string, record, index) => (
+      render: (name: string, _record, index) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {index < 3 && <TrophyOutlined style={{ color: ['#ffd700', '#c0c0c0', '#cd7f32'][index], marginRight: '4px' }} />}
           <span>{name}</span>
@@ -443,7 +442,7 @@ const PurchaseReport: React.FC = () => {
                         </span>
                       </div>
                       <div style={{ flex: 1, textAlign: 'right', minWidth: '60px' }}>
-                        <Tag color="blue" size="small">{item.orders}单</Tag>
+                        <Tag color="blue">{item.orders}单</Tag>
                       </div>
                     </div>
                   ))

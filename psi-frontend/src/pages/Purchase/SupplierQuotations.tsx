@@ -22,16 +22,13 @@ import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
-  DeleteOutlined,
   EyeOutlined,
   ExportOutlined,
   ShopOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
-  StarOutlined,
-  PhoneOutlined,
-  MailOutlined
+  PhoneOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -179,7 +176,7 @@ const mockSupplierQuotations = [
 ];
 
 const SupplierQuotations: React.FC = () => {
-  const [quotations, setQuotations] = useState(mockSupplierQuotations);
+  const [quotations, setQuotations] = useState<any[]>(mockSupplierQuotations);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');

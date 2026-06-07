@@ -12,11 +12,9 @@ import {
   Col,
   Statistic,
   Modal,
-  Form,
   message,
   Divider,
-  QRCode,
-  Tooltip
+  QRCode
 } from 'antd';
 import {
   SearchOutlined,
@@ -201,7 +199,7 @@ const mockSerialInventory = [
 ];
 
 const SerialInventory: React.FC = () => {
-  const [serials, setSerials] = useState(mockSerialInventory);
+  const [serials] = useState(mockSerialInventory);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');

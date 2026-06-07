@@ -9,7 +9,8 @@ import {
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
-  BellOutlined
+  BellOutlined,
+  AppstoreOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import Dashboard from '../pages/Dashboard/Dashboard';
@@ -188,7 +189,7 @@ const MainLayout: React.FC = () => {
 
   // 根据权限过滤菜单
   const filteredMenuItems = React.useMemo(() => {
-    console.log('当前用户权限:', hasAnyPermission ? '权限函数可用' : '权限函数不可用');
+    console.log('当前用户权限: 权限函数可用');
     console.log('用户信息:', user);
     console.log('用户权限列表:', user?.permissions || '无权限数据');
     
@@ -231,26 +232,21 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{
-        textAlign: 'center',
-        color: '#fff',
-        height: 64,
-        paddingInline: 48,
-        lineHeight: '64px',
-        backgroundColor: '#1f2937',
-        fontSize: '20px',
-        fontWeight: 'bold',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ marginRight: '8px' }}>📊</span>
-            PSI管理系统
+    <Layout className="app-shell">
+      <Header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <span className="app-brand-icon"><AppstoreOutlined /></span>
+            <div>
+              <strong>PSI管理系统</strong>
+              <span>采购 / 销售 / 库存</span>
+            </div>
           </div>
           
-          <Space size="large">
-            <BellOutlined style={{ fontSize: '18px', color: '#fff', cursor: 'pointer' }} />
+          <Space size={16}>
+            <button className="header-icon-button" type="button" aria-label="通知">
+              <BellOutlined />
+            </button>
             <Dropdown 
               menu={{ 
                 items: [
@@ -262,56 +258,36 @@ const MainLayout: React.FC = () => {
               }} 
               placement="bottomRight"
             >
-              <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Avatar size="small" icon={<UserOutlined />} />
-                <span style={{ color: '#fff' }}>{user?.realName || user?.username || '用户'}</span>
+              <div className="user-trigger">
+                <Avatar size={28} icon={<UserOutlined />} />
+                <span>{user?.realName || user?.username || '用户'}</span>
               </div>
             </Dropdown>
           </Space>
         </div>
       </Header>
       
-      <Layout>
-        <Sider width="280px" style={{
-          backgroundColor: '#1e293b',
-          boxShadow: '2px 0 12px rgba(0,0,0,0.15)',
-          borderRight: '1px solid #334155'
-        }}>
+      <Layout className="app-main">
+        <Sider width="264px" className="app-sider">
           <Menu
             theme="dark"
             mode="inline"
             selectedKeys={[selectedKey]}
             defaultOpenKeys={[]}
             items={filteredMenuItems}
-            style={{ 
-              height: '100%', 
-              borderRight: 0,
-              backgroundColor: 'transparent',
-              padding: '12px'
-            }}
             className="professional-menu"
             onClick={({ key }) => setSelectedKey(key)}
           />
         </Sider>
         
-        <Content style={{
-          minHeight: 'calc(100vh - 128px)',
-          color: '#374151',
-          backgroundColor: '#f9fafb',
-          padding: '24px',
-          textAlign: 'left'
-        }}>
-          {renderContent()}
+        <Content className="app-content">
+          <div className="content-surface">
+            {renderContent()}
+          </div>
         </Content>
       </Layout>
       
-      <Footer style={{
-        textAlign: 'center',
-        color: '#9ca3af',
-        backgroundColor: '#f3f4f6',
-        borderTop: '1px solid #e5e7eb',
-        fontSize: '14px'
-      }}>
+      <Footer className="app-footer">
         PSI管理系统 ©{new Date().getFullYear()} Created by XiongZe
       </Footer>
     </Layout>

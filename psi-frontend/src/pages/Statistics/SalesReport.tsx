@@ -20,8 +20,6 @@ import {
   LineChartOutlined,
   ExportOutlined,
   PrinterOutlined,
-  RiseOutlined,
-  FallOutlined,
   DollarOutlined,
   ShoppingCartOutlined,
   UserOutlined,
@@ -32,8 +30,7 @@ import {
   SalesReportService,
   type SalesReportData,
   type CustomerRankingItem,
-  type SalesmanRankingItem,
-  type ProductRankingItem
+  type SalesmanRankingItem
 } from '../../services/statisticsService';
 import dayjs from 'dayjs';
 
@@ -148,54 +145,6 @@ const SalesReport: React.FC = () => {
   const handlePrint = () => {
     window.print();
   };
-
-  // 产品排行表格列
-  const productColumns: ColumnsType<ProductRankingItem> = [
-    {
-      title: '排名',
-      key: 'rank',
-      width: 60,
-      render: (_, __, index) => (
-        <div style={{
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          background: index < 3 ? ['#ffd700', '#c0c0c0', '#cd7f32'][index] : '#f0f0f0',
-          color: index < 3 ? '#fff' : '#666',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '12px',
-          fontWeight: 'bold'
-        }}>
-          {index + 1}
-        </div>
-      ),
-    },
-    {
-      title: '产品名称',
-      dataIndex: 'name',
-      key: 'name',
-      ellipsis: true,
-    },
-    {
-      title: '销售金额',
-      dataIndex: 'value',
-      key: 'value',
-      render: (amount: number) => (
-        <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-          ¥{amount.toLocaleString()}
-        </span>
-      ),
-      sorter: (a, b) => a.value - b.value,
-    },
-    {
-      title: '占比',
-      dataIndex: 'percentage',
-      key: 'percentage',
-      render: (percentage: number) => `${percentage}%`,
-    },
-  ];
 
   // 客户排行表格列
   const customerColumns: ColumnsType<CustomerRankingItem> = [

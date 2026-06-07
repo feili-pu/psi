@@ -24,12 +24,16 @@ public class SalesQuotationService {
 
     // 获取所有报价单
     public List<SalesQuotation> getAllQuotations() {
-        return quotationMapper.findAll();
+        List<SalesQuotation> quotations = quotationMapper.findAll();
+        quotations.forEach(this::ensureStatus);
+        return quotations;
     }
 
     // 根据ID获取报价单（包含明细）
     public SalesQuotation getQuotationById(Long id) {
-        return quotationMapper.findById(id);
+        SalesQuotation quotation = quotationMapper.findById(id);
+        ensureStatus(quotation);
+        return quotation;
     }
 
     // 获取报价单明细
@@ -39,17 +43,23 @@ public class SalesQuotationService {
 
     // 根据客户名称搜索
     public List<SalesQuotation> searchByCustomer(String customerName) {
-        return quotationMapper.findByCustomerName(customerName);
+        List<SalesQuotation> quotations = quotationMapper.findByCustomerName(customerName);
+        quotations.forEach(this::ensureStatus);
+        return quotations;
     }
 
     // 根据销售员查询
     public List<SalesQuotation> getQuotationsBySalesperson(String salesperson) {
-        return quotationMapper.findBySalesperson(salesperson);
+        List<SalesQuotation> quotations = quotationMapper.findBySalesperson(salesperson);
+        quotations.forEach(this::ensureStatus);
+        return quotations;
     }
 
     // 根据状态查询
     public List<SalesQuotation> getQuotationsByStatus(String status) {
-        return quotationMapper.findByStatus(status);
+        List<SalesQuotation> quotations = quotationMapper.findByStatus(status);
+        quotations.forEach(this::ensureStatus);
+        return quotations;
     }
 
     // 创建报价单
@@ -60,6 +70,7 @@ public class SalesQuotationService {
         quotation.setQuotationDate(LocalDateTime.now());
         quotation.setCreatedTime(LocalDateTime.now());
         quotation.setUpdatedTime(LocalDateTime.now());
+        ensureStatus(quotation);
         
         // 计算总金额
         BigDecimal totalAmount = calculateTotalAmount(items);
@@ -85,6 +96,10 @@ public class SalesQuotationService {
     @Transactional
     public SalesQuotation updateQuotation(SalesQuotation quotation, List<SalesQuotationItem> items) {
         quotation.setUpdatedTime(LocalDateTime.now());
+        if (isBlank(quotation.getStatus())) {
+            SalesQuotation existing = quotationMapper.findById(quotation.getId());
+            quotation.setStatus(existing != null && !isBlank(existing.getStatus()) ? existing.getStatus() : "DRAFT");
+        }
         
         // 计算总金额
         if (items != null) {
@@ -143,6 +158,16 @@ public class SalesQuotationService {
     private String generateQuotationNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "QT" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private void ensureStatus(SalesQuotation quotation) {
+        if (quotation != null && isBlank(quotation.getStatus())) {
+            quotation.setStatus("DRAFT");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     // 计算总金额 - 修复版本

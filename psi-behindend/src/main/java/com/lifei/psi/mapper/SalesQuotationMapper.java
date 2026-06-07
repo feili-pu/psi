@@ -29,7 +29,7 @@ public interface SalesQuotationMapper {
     List<SalesQuotation> findBySalesperson(String salesperson);
 
     // 根据状态查询
-    @Select("SELECT * FROM sales_quotation WHERE status = #{status} ORDER BY created_time DESC")
+    @Select("SELECT * FROM sales_quotation WHERE status = #{status} OR (#{status} = 'DRAFT' AND status IS NULL) ORDER BY created_time DESC")
     List<SalesQuotation> findByStatus(String status);
 
     // 插入报价单

@@ -201,9 +201,7 @@ export class SalesOrderService {
   static async confirmOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/confirm`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -217,9 +215,7 @@ export class SalesOrderService {
   static async startProduction(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/start-production`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -233,9 +229,7 @@ export class SalesOrderService {
   static async shipOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/ship`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -249,9 +243,7 @@ export class SalesOrderService {
   static async deliverOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/deliver`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -265,9 +257,7 @@ export class SalesOrderService {
   static async completeOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/complete`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -281,9 +271,7 @@ export class SalesOrderService {
   static async cancelOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/cancel`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -311,9 +299,7 @@ export class SalesOrderService {
   static async getOrdersByStatus(status: string): Promise<SalesOrder[]> {
     const response = await fetch(`${this.baseUrl}/status/${status}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -327,9 +313,7 @@ export class SalesOrderService {
   static async getOrdersBySalesperson(salesperson: string): Promise<SalesOrder[]> {
     const response = await fetch(`${this.baseUrl}/salesperson/${encodeURIComponent(salesperson)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -392,9 +376,7 @@ export class SalesQuotationService {
   static async updateQuotation(id: number, quotationData: SalesQuotationRequest): Promise<SalesQuotation> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
       body: JSON.stringify(quotationData),
     });
     
@@ -411,9 +393,7 @@ export class SalesQuotationService {
   static async deleteQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -427,9 +407,7 @@ export class SalesQuotationService {
   static async sendQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/send`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -443,9 +421,7 @@ export class SalesQuotationService {
   static async acceptQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/accept`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -459,9 +435,7 @@ export class SalesQuotationService {
   static async rejectQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/reject`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -475,9 +449,7 @@ export class SalesQuotationService {
   static async searchByCustomer(customerName: string): Promise<SalesQuotation[]> {
     const response = await fetch(`${this.baseUrl}/search?customerName=${encodeURIComponent(customerName)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -491,9 +463,7 @@ export class SalesQuotationService {
   static async getQuotationsByStatus(status: string): Promise<SalesQuotation[]> {
     const response = await fetch(`${this.baseUrl}/status/${status}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -507,9 +477,7 @@ export class SalesQuotationService {
   static async getQuotationsBySalesperson(salesperson: string): Promise<SalesQuotation[]> {
     const response = await fetch(`${this.baseUrl}/salesperson/${encodeURIComponent(salesperson)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {

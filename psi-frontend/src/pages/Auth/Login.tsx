@@ -23,7 +23,11 @@ import {
   MobileOutlined,
   MailOutlined,
   LoginOutlined,
-  UserAddOutlined
+  UserAddOutlined,
+  BarChartOutlined,
+  ShopOutlined,
+  InboxOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import AuthService from '../../services/authService';
@@ -148,45 +152,60 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <Card
-        style={{
-          width: '100%',
-          maxWidth: '450px',
-          borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          border: 'none'
-        }}
-        bodyStyle={{ padding: '40px' }}
-      >
-        {/* 系统标题 */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            fontSize: '48px',
-            marginBottom: '8px'
-          }}>
-            📊
+    <div className="auth-shell">
+      <div className="auth-panel">
+        <section className="auth-brand-panel">
+          <div className="auth-brand-mark">
+            <BarChartOutlined />
           </div>
-          <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
-            PSI管理系统
-          </Title>
-          <Text type="secondary">
-            采购 · 销售 · 库存一体化管理平台
-          </Text>
-        </div>
+          <div>
+            <Text className="auth-eyebrow">PSI BUSINESS SUITE</Text>
+            <Title level={1} className="auth-title">
+              PSI管理系统
+            </Title>
+            <Text className="auth-subtitle">
+              采购、销售、库存协同工作台
+            </Text>
+          </div>
+
+          <div className="auth-metrics">
+            <div className="auth-metric">
+              <ShopOutlined />
+              <span>采购</span>
+              <strong>询价 / 比价 / 订单</strong>
+            </div>
+            <div className="auth-metric">
+              <BarChartOutlined />
+              <span>销售</span>
+              <strong>报价 / 订单 / 统计</strong>
+            </div>
+            <div className="auth-metric">
+              <InboxOutlined />
+              <span>库存</span>
+              <strong>入库 / 盘点 / 序列号</strong>
+            </div>
+          </div>
+
+          <div className="auth-status-card">
+            <CheckCircleOutlined />
+            <div>
+              <strong>系统运行正常</strong>
+              <span>本地服务已连接</span>
+            </div>
+          </div>
+        </section>
+
+        <Card className="auth-card" bodyStyle={{ padding: 0 }}>
+          <div className="auth-card-header">
+            <Title level={2}>登录系统</Title>
+            <Text>使用管理员账号进入业务工作台</Text>
+          </div>
 
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
-          centered
           size="large"
+          className="auth-tabs"
         >
           {/* 登录标签页 */}
           <TabPane
@@ -206,8 +225,8 @@ const Login: React.FC = () => {
               size="large"
             >
               {/* 登录方式切换 */}
-              <div style={{ marginBottom: '16px' }}>
-                <Space>
+              <div className="login-mode-group">
+                <Space size={8} wrap>
                   <Button
                     type={loginType === LoginType.USERNAME ? 'primary' : 'default'}
                     size="small"
@@ -294,12 +313,7 @@ const Login: React.FC = () => {
                   htmlType="submit"
                   loading={loading}
                   block
-                  style={{
-                    height: '48px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    borderRadius: '8px'
-                  }}
+                  className="auth-submit"
                 >
                   {loading ? '登录中...' : '立即登录'}
                 </Button>
@@ -312,7 +326,7 @@ const Login: React.FC = () => {
               description="为了您的账户安全，请不要在公共场所保存登录信息"
               type="info"
               showIcon
-              style={{ marginTop: '16px' }}
+              className="auth-alert"
             />
           </TabPane>
 
@@ -464,12 +478,7 @@ const Login: React.FC = () => {
                   htmlType="submit"
                   loading={registerLoading}
                   block
-                  style={{
-                    height: '48px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    borderRadius: '8px'
-                  }}
+                  className="auth-submit"
                 >
                   {registerLoading ? '注册中...' : '立即注册'}
                 </Button>
@@ -478,7 +487,7 @@ const Login: React.FC = () => {
           </TabPane>
         </Tabs>
 
-        <Divider style={{ margin: '24px 0' }}>
+        <Divider className="auth-divider">
           <Text type="secondary">其他登录方式</Text>
         </Divider>
 
@@ -487,11 +496,7 @@ const Login: React.FC = () => {
           <Col span={8}>
             <Button
               block
-              style={{
-                height: '40px',
-                border: '1px solid #1890ff',
-                color: '#1890ff'
-              }}
+              className="auth-alt-button auth-alt-blue"
               onClick={() => message.info('微信登录功能开发中')}
             >
               微信
@@ -500,11 +505,7 @@ const Login: React.FC = () => {
           <Col span={8}>
             <Button
               block
-              style={{
-                height: '40px',
-                border: '1px solid #52c41a',
-                color: '#52c41a'
-              }}
+              className="auth-alt-button auth-alt-green"
               onClick={() => message.info('钉钉登录功能开发中')}
             >
               钉钉
@@ -513,11 +514,7 @@ const Login: React.FC = () => {
           <Col span={8}>
             <Button
               block
-              style={{
-                height: '40px',
-                border: '1px solid #722ed1',
-                color: '#722ed1'
-              }}
+              className="auth-alt-button auth-alt-indigo"
               onClick={() => message.info('企业微信登录功能开发中')}
             >
               企微
@@ -526,16 +523,17 @@ const Login: React.FC = () => {
         </Row>
 
         {/* 底部信息 */}
-        <div style={{ textAlign: 'center', marginTop: '32px' }}>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+        <div className="auth-footer-note">
+          <Text type="secondary">
             © 2024 PSI管理系统. All rights reserved.
           </Text>
           <br />
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary">
             技术支持：系统开发团队 | 服务热线：400-123-4567
           </Text>
         </div>
       </Card>
+      </div>
     </div>
   );
 };

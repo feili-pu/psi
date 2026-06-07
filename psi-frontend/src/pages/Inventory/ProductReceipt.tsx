@@ -15,19 +15,16 @@ import {
   Form,
   InputNumber,
   message,
-  Divider,
-  Progress
+  Divider
 } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
-  DeleteOutlined,
   EyeOutlined,
   ExportOutlined,
   InboxOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   ExclamationCircleOutlined,
   SendOutlined,
   QrcodeOutlined
@@ -410,7 +407,7 @@ const ProductReceipt: React.FC = () => {
             type="text"
             icon={<QrcodeOutlined />}
             size="small"
-            onClick={() => handlePrintLabel(record.id)}
+            onClick={handlePrintLabel}
           >
             标签
           </Button>
@@ -466,7 +463,7 @@ const ProductReceipt: React.FC = () => {
   };
 
   // 处理打印标签
-  const handlePrintLabel = (id: number) => {
+  const handlePrintLabel = () => {
     message.info('正在生成产品标签...');
   };
 

@@ -15,23 +15,19 @@ import {
   Form,
   InputNumber,
   message,
-  Divider,
-  Progress
+  Divider
 } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
-  DeleteOutlined,
   EyeOutlined,
   ExportOutlined,
   DisconnectOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   PlayCircleOutlined,
-  PauseCircleOutlined,
-  SendOutlined,
-  WarningOutlined
+  PauseCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 

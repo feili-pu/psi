@@ -257,9 +257,9 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className="dashboard-page">
       {/* 欢迎信息 */}
-      <Card style={{ marginBottom: '24px' }}>
+      <Card className="dashboard-welcome">
         <Row justify="space-between" align="middle">
           <Col>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -288,9 +288,9 @@ const Dashboard: React.FC = () => {
       </Card>
 
       {/* 核心数据统计 */}
-      <Row gutter={16} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} className="dashboard-metrics">
         <Col span={6}>
-          <Card>
+          <Card className="metric-card metric-card-sales">
             <Statistic
               title="今日销售额"
               value={todayStats.sales.amount}
@@ -309,7 +309,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card className="metric-card metric-card-purchase">
             <Statistic
               title="今日采购额"
               value={todayStats.purchase.amount}
@@ -328,7 +328,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card className="metric-card metric-card-inventory">
             <Statistic
               title="库存总值"
               value={todayStats.inventory.totalValue}
@@ -345,7 +345,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card>
+          <Card className="metric-card metric-card-users">
             <Statistic
               title="在线用户"
               value={todayStats.users.online}
@@ -363,27 +363,27 @@ const Dashboard: React.FC = () => {
       </Row>
 
       {/* 快捷操作 */}
-      <Card title="快捷操作" style={{ marginBottom: '24px' }}>
-        <Row gutter={16}>
+      <Card title="快捷操作" className="dashboard-section">
+        <Row gutter={[16, 16]}>
           {quickActions.map((action) => (
             <Col span={6} key={action.key}>
-              <Card
-                hoverable
-                style={{ textAlign: 'center', cursor: 'pointer' }}
+              <button
+                type="button"
+                className="quick-action-tile"
                 onClick={() => handleQuickAction(action.key)}
               >
-                <div style={{ fontSize: '32px', color: action.color, marginBottom: '8px' }}>
+                <span className="quick-action-icon" style={{ color: action.color }}>
                   {action.icon}
-                </div>
-                <div style={{ fontWeight: 'bold' }}>{action.title}</div>
-              </Card>
+                </span>
+                <strong>{action.title}</strong>
+              </button>
             </Col>
           ))}
         </Row>
       </Card>
 
       {/* 主要内容区域 */}
-      <Row gutter={16} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} className="dashboard-section">
         {/* 待办事项 */}
         <Col span={8}>
           <Card 
@@ -451,7 +451,7 @@ const Dashboard: React.FC = () => {
       </Row>
 
       {/* 底部信息区域 */}
-      <Row gutter={16}>
+      <Row gutter={[16, 16]}>
         {/* 系统通知 */}
         <Col span={8}>
           <Card 

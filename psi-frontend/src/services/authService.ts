@@ -10,13 +10,7 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: {
-    id: number;
-    username: string;
-    realName: string;
-    department?: string;
-    position?: string;
-  };
+  user?: UserInfo;
 }
 
 export interface UserInfo {
