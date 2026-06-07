@@ -463,7 +463,7 @@ const Register: React.FC = () => {
           <Result
             icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
             title="注册成功！"
-            subTitle="您的账户已创建成功，现在可以开始使用 lifei PSI 了"
+            subTitle="您的账户已创建成功，现在可以开始使用企联 PSI 了"
             extra={[
               <Button type="primary" key="login" onClick={handleBackToLogin}>
                 立即登录
@@ -514,10 +514,10 @@ const Register: React.FC = () => {
         {/* 系统标题 */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ marginBottom: '10px' }}>
-            <img className="register-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
+            <img className="register-brand-logo" src="/qilian-psi.svg" alt="企联 PSI" />
           </div>
           <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
-            注册 lifei PSI
+            注册企联 PSI
           </Title>
           <Text type="secondary">
             创建您的企业管理账户
@@ -548,7 +548,7 @@ const Register: React.FC = () => {
             </Text>
             <br />
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              © {new Date().getFullYear()} lifei PSI. Created by lifei.
+              © {new Date().getFullYear()} 企联 PSI. Created by lifei.
             </Text>
           </div>
         )}

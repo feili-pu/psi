@@ -466,13 +466,13 @@ const ForgotPassword: React.FC = () => {
         {/* 系统标题 */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ marginBottom: '10px' }}>
-            <img className="register-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
+            <img className="register-brand-logo" src="/qilian-psi.svg" alt="企联 PSI" />
           </div>
           <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
             重置密码
           </Title>
           <Text type="secondary">
-            找回您的 lifei PSI 账户
+            找回您的企联 PSI 账户
           </Text>
         </div>
 

@@ -255,10 +255,10 @@ const MainLayout: React.FC = () => {
         <div className="app-header-inner">
           <div className="app-brand">
             <span className="app-brand-icon">
-              <img className="app-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
+              <img className="app-brand-logo" src="/qilian-psi.svg" alt="企联 PSI" />
             </span>
             <div>
-              <strong>lifei PSI</strong>
+              <strong>企联 PSI</strong>
               <span>销售 / 采购 / 库存 / 财务</span>
             </div>
           </div>
@@ -308,7 +308,7 @@ const MainLayout: React.FC = () => {
       </Layout>
       
       <Footer className="app-footer">
-        lifei PSI ©{new Date().getFullYear()} Created by lifei
+        企联 PSI ©{new Date().getFullYear()} Created by lifei
       </Footer>
     </Layout>
   );
