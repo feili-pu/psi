@@ -1,16 +1,37 @@
 # PSI 进销存管理系统
 
-这是一个前后端分离的 PSI（采购、销售、库存）管理系统。后端基于 Spring Boot + MyBatis + MySQL，前端基于 React + TypeScript + Vite + Ant Design。
+PSI 是一个前后端分离的进销存管理系统，覆盖销售、采购、库存、权限和基础统计报表。项目适合作为中小企业进销存业务系统的基础版本，也可继续扩展审批流、退换货、财务凭证和正式数据库迁移体系。
+
+Created by lifei.
 
 ## 功能模块
 
-- 登录、注册、验证码发送、密码重置、Token 校验
-- 销售报价、销售订单、销售统计报表
-- 采购申请、采购询价、供应商报价、采购比价、采购订单、采购应付、采购统计报表
-- 库存入库、库存盘点、物料领用、物料退库、产品入库、产品组装、产品拆解
-- 序列号库存、序列号入库
-- 用户、角色、权限管理
-- Swagger/OpenAPI 在线接口文档
+- 认证与权限：登录、注册、Token 校验、用户管理、角色管理、权限控制。
+- 销售管理：销售报价、销售订单、销售发货、销售交付、销售应收、销售统计。
+- 采购管理：采购申请、采购询价、供应商报价、采购比价、采购订单、采购收货、采购应付、采购统计。
+- 库存管理：采购入库、库存盘点、生产领料、生产退料、成品入库、产品组装、产品拆解、序列号库存。
+- 报表中心：销售报表、采购报表、库存报表、财务报表。
+- 接口文档：Swagger/OpenAPI 在线文档。
+
+## 业务流向
+
+销售主链路：
+
+```text
+销售报价 -> 销售订单 -> 发货扣库存 -> 交付生成应收 -> 收款
+```
+
+采购主链路：
+
+```text
+采购申请 -> 采购询价 -> 供应商报价 -> 采购比价 -> 采购订单 -> 收货入库 -> 生成应付 -> 付款
+```
+
+库存主链路：
+
+```text
+入库/出库/盘点/领退料/组装拆解 -> 库存余额 -> 库存流水 -> 报表统计
+```
 
 ## 技术栈
 
@@ -48,7 +69,7 @@ psi
 - Node.js 20+
 - MySQL 8+
 
-## 数据库配置
+## 数据库
 
 后端默认连接本机 MySQL：
 
@@ -58,7 +79,7 @@ spring.datasource.username=root
 spring.datasource.password=123456
 ```
 
-配置文件位于：
+配置文件：
 
 ```text
 psi-behindend/src/main/resources/application.properties
@@ -72,7 +93,7 @@ psi-behindend/src/main/resources/application.properties
 psi-behindend/src/main/resources/psi_database_init.sql
 ```
 
-已有数据库升级时，先执行增量表结构补丁，再按需执行幂等数据修复脚本：
+已有数据库升级时，先执行增量结构补丁，再按需执行幂等数据修复脚本：
 
 ```text
 psi-behindend/src/main/resources/sql/schema_patch.sql
@@ -86,14 +107,16 @@ psi-behindend/src/main/resources/sql/data_normalization.sql
 密码：123456
 ```
 
-## 启动后端
+## 启动项目
+
+启动后端：
 
 ```bash
 cd psi-behindend
 mvn spring-boot:run
 ```
 
-后端默认地址：
+后端地址：
 
 ```text
 http://localhost:8080
@@ -105,7 +128,7 @@ http://localhost:8080
 http://localhost:8080/swagger-ui.html
 ```
 
-## 启动前端
+启动前端：
 
 ```bash
 cd psi-frontend
@@ -113,20 +136,13 @@ npm install
 npm run dev
 ```
 
-前端默认地址：
+前端地址：
 
 ```text
 http://localhost:5173
 ```
 
 ## 构建验证
-
-前端构建：
-
-```bash
-cd psi-frontend
-npm run build
-```
 
 后端编译：
 
@@ -135,26 +151,27 @@ cd psi-behindend
 mvn -DskipTests compile
 ```
 
-## 接口说明
+前端构建：
 
-前端服务默认请求：
-
-```text
-http://localhost:8080
+```bash
+cd psi-frontend
+npm run build
 ```
 
-主要真实接口已经接入：
+## 主要接口
 
 - `/api/auth/*`
 - `/api/quotations`
 - `/api/orders`
 - `/api/sales-receivables`
+- `/api/statistics`
 - `/api/purchase/requests`
 - `/api/purchase/inquiries`
 - `/api/purchase/quotations`
 - `/api/purchase/comparisons`
 - `/api/purchase/orders`
 - `/api/purchase-payables`
+- `/api/purchase/statistics`
 - `/api/inventory-receipts`
 - `/api/inventory-checks`
 - `/api/material-requisitions`
@@ -164,30 +181,30 @@ http://localhost:8080
 - `/api/product-disassemblies`
 - `/api/serial-number-inventory`
 - `/api/serial-number-receipts`
-- `/api/statistics`
-- `/api/purchase/statistics`
+- `/api/users`
+- `/api/roles`
+- `/api/permissions`
 
-## 本次修复重点
+## 权限说明
 
-- 修复销售报价/订单、采购订单等新建后状态为空的问题，后端创建时会自动写入默认状态。
-- 销售订单发货会扣减库存并记录库存流水，交付会自动生成销售应收。
-- 采购订单收货会生成采购入库单、库存流水和采购应付。
-- 后端启动不再自动执行删表初始化脚本，避免重启覆盖真实业务数据。
-- 修复采购订单确认、生产、发货、收货、完成、取消等流程接口映射。
-- 采购申请、询价、供应商报价、采购比价、采购应付改为调用后端真实接口。
-- 库存相关页面统一接入后端真实接口，不再使用页面内模拟数据。
-- 注册、验证码发送、重置密码改为调用后端接口。
-- API 文档页改为加载后端 Swagger UI。
-- 修复销售统计、采购统计权限码和数据库权限码不一致导致的访问问题。
-- 前端主布局支持内容区滚动，避免左侧菜单和右侧内容过长时无法下拉。
+权限码按 `模块:资源:动作` 命名。常用动作包括：
+
+- `read`：查看数据
+- `create`：创建数据
+- `update`：修改数据
+- `delete`：删除数据
+- `view`：部分库存/生产模块沿用的查看权限
+
+前端菜单和工作台会按当前用户权限动态展示，不会向普通销售、采购或仓管账号请求无权限模块的数据。
 
 ## 常见问题
 
-如果登录提示“网络错误，请检查服务器连接”，请确认：
+登录提示“网络错误，请检查服务器连接”时，请确认：
 
 - 后端服务已启动并监听 `8080` 端口。
 - MySQL 已启动，账号密码与 `application.properties` 一致。
-- 首次使用前已执行 `psi_database_init.sql`，既有库升级已执行 `schema_patch.sql`。
+- 首次使用前已执行 `psi_database_init.sql`。
+- 既有库升级已执行 `schema_patch.sql` 和必要的数据修复脚本。
 - 前端请求地址仍为 `http://localhost:8080`。
 
-如果接口返回 401 或 403，请重新登录，并检查当前用户角色是否拥有对应权限。
+接口返回 `401` 或 `403` 时，请重新登录，并检查当前用户角色是否拥有对应权限。

@@ -24,7 +24,8 @@ import {
   IdcardOutlined,
   BankOutlined,
   CheckCircleOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  AppstoreOutlined
 } from '@ant-design/icons';
 import AuthService from '../../services/authService';
 
@@ -521,7 +522,9 @@ const Register: React.FC = () => {
 
         {/* 系统标题 */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>📊</div>
+          <div style={{ fontSize: '44px', marginBottom: '8px', color: '#0f766e' }}>
+            <AppstoreOutlined />
+          </div>
           <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
             注册PSI管理系统
           </Title>
@@ -554,7 +557,7 @@ const Register: React.FC = () => {
             </Text>
             <br />
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              © 2024 PSI管理系统. All rights reserved.
+              © {new Date().getFullYear()} PSI管理系统. Created by lifei.
             </Text>
           </div>
         )}

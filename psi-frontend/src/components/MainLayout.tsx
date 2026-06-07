@@ -1,13 +1,31 @@
 import React, { useState } from 'react';
 import { Layout, Menu, Dropdown, Avatar, Space } from 'antd';
 import {
+  ApiOutlined,
+  AuditOutlined,
+  BankOutlined,
+  BarcodeOutlined,
   DashboardOutlined,
-  ShoppingCartOutlined,
-  ShopOutlined,
+  DatabaseOutlined,
+  FileDoneOutlined,
+  FileSearchOutlined,
+  FileTextOutlined,
+  FundOutlined,
+  GoldOutlined,
   InboxOutlined,
   BarChartOutlined,
+  LineChartOutlined,
+  ReconciliationOutlined,
+  SafetyCertificateOutlined,
   SettingOutlined,
+  ShoppingOutlined,
+  ShoppingCartOutlined,
+  ShopOutlined,
+  SolutionOutlined,
+  SwapOutlined,
+  ToolOutlined,
   UserOutlined,
+  TeamOutlined,
   LogoutOutlined,
   BellOutlined,
   AppstoreOutlined
@@ -71,8 +89,8 @@ const menuPermissions: Record<string, string[]> = {
   'statistics': ['sales:statistics:read', 'purchase:statistics:read'], // 统计报表（有任一权限即可）
   'sales-report': ['sales:statistics:read'],
   'purchase-report': ['purchase:statistics:read'],
-  'inventory-report': ['inventory:statistics:read'],
-  'financial-report': ['financial:statistics:read'],
+  'inventory-report': ['inventory:receipt:read', 'inventory:check:view', 'serial:inventory:view'],
+  'financial-report': ['purchase:payable:read', 'sales:statistics:read', 'purchase:statistics:read'],
   'system': ['user:read', 'role:read'], // 系统管理（有任一权限即可）
   'users': ['user:read'],
   'roles': ['role:read'],
@@ -83,30 +101,30 @@ const menuItems = [
   {
     key: 'dashboard',
     icon: <DashboardOutlined />,
-    label: '工作台',
+    label: '业务工作台',
   },
   {
     key: 'sales',
-    icon: <ShoppingCartOutlined />,
+    icon: <ShoppingOutlined />,
     label: '销售管理',
     children: [
-      { key: 'sales-orders', label: '销售订单' },
-      { key: 'sales-quotations', label: '销售报价' },
-      { key: 'sales-statistics', label: '销售统计' }
+      { key: 'sales-orders', icon: <FileDoneOutlined />, label: '销售订单' },
+      { key: 'sales-quotations', icon: <FileTextOutlined />, label: '销售报价' },
+      { key: 'sales-statistics', icon: <LineChartOutlined />, label: '销售统计' }
     ]
   },
   {
     key: 'purchase',
-    icon: <ShopOutlined />,
+    icon: <ShoppingCartOutlined />,
     label: '采购管理',
     children: [
-      { key: 'purchase-requests', label: '采购申请' },
-      { key: 'purchase-inquiry', label: '采购询价' },
-      { key: 'purchase-comparison', label: '采购比价' },
-      { key: 'supplier-quotations', label: '供应商报价' },
-      { key: 'purchase-orders', label: '采购订单' },
-      { key: 'purchase-payable', label: '采购应付' },
-      { key: 'purchase-statistics', label: '采购统计' }
+      { key: 'purchase-requests', icon: <SolutionOutlined />, label: '采购申请' },
+      { key: 'purchase-inquiry', icon: <FileSearchOutlined />, label: '采购询价' },
+      { key: 'purchase-comparison', icon: <AuditOutlined />, label: '采购比价' },
+      { key: 'supplier-quotations', icon: <ShopOutlined />, label: '供应商报价' },
+      { key: 'purchase-orders', icon: <ReconciliationOutlined />, label: '采购订单' },
+      { key: 'purchase-payable', icon: <BankOutlined />, label: '采购应付' },
+      { key: 'purchase-statistics', icon: <FundOutlined />, label: '采购统计' }
     ]
   },
   {
@@ -114,15 +132,15 @@ const menuItems = [
     icon: <InboxOutlined />,
     label: '库存管理',
     children: [
-      { key: 'inventory-receipt', label: '库存入库' },
-      { key: 'inventory-check', label: '库存盘点' },
-      { key: 'material-requisition', label: '物料领用' },
-      { key: 'material-return', label: '物料退库' },
-      { key: 'product-receipt', label: '产品入库' },
-      { key: 'product-assembly', label: '产品组装' },
-      { key: 'product-disassembly', label: '产品拆解' },
-      { key: 'serial-inventory', label: '序列号库存' },
-      { key: 'serial-receipt', label: '序列号入库' }
+      { key: 'inventory-receipt', icon: <DatabaseOutlined />, label: '采购入库' },
+      { key: 'inventory-check', icon: <SafetyCertificateOutlined />, label: '库存盘点' },
+      { key: 'material-requisition', icon: <ToolOutlined />, label: '生产领料' },
+      { key: 'material-return', icon: <SwapOutlined />, label: '生产退料' },
+      { key: 'product-receipt', icon: <GoldOutlined />, label: '成品入库' },
+      { key: 'product-assembly', icon: <AppstoreOutlined />, label: '产品组装' },
+      { key: 'product-disassembly', icon: <ToolOutlined />, label: '产品拆解' },
+      { key: 'serial-inventory', icon: <BarcodeOutlined />, label: '序列号库存' },
+      { key: 'serial-receipt', icon: <BarcodeOutlined />, label: '序列号入库' }
     ]
   },
   {
@@ -130,10 +148,10 @@ const menuItems = [
     icon: <BarChartOutlined />,
     label: '统计报表',
     children: [
-      { key: 'sales-report', label: '销售报表' },
-      { key: 'purchase-report', label: '采购报表' },
-      { key: 'inventory-report', label: '库存报表' },
-      { key: 'financial-report', label: '财务报表' }
+      { key: 'sales-report', icon: <LineChartOutlined />, label: '销售报表' },
+      { key: 'purchase-report', icon: <FundOutlined />, label: '采购报表' },
+      { key: 'inventory-report', icon: <DatabaseOutlined />, label: '库存报表' },
+      { key: 'financial-report', icon: <BankOutlined />, label: '财务报表' }
     ]
   },
   {
@@ -141,9 +159,9 @@ const menuItems = [
     icon: <SettingOutlined />,
     label: '系统管理',
     children: [
-      { key: 'users', label: '用户管理' },
-      { key: 'roles', label: '角色管理' },
-      { key: 'api-docs', label: 'API文档' }
+      { key: 'users', icon: <TeamOutlined />, label: '用户管理' },
+      { key: 'roles', icon: <SafetyCertificateOutlined />, label: '角色权限' },
+      { key: 'api-docs', icon: <ApiOutlined />, label: '接口文档' }
     ]
   }
 ];
@@ -239,7 +257,7 @@ const MainLayout: React.FC = () => {
             <span className="app-brand-icon"><AppstoreOutlined /></span>
             <div>
               <strong>PSI管理系统</strong>
-              <span>采购 / 销售 / 库存</span>
+              <span>销售 / 采购 / 库存 / 财务</span>
             </div>
           </div>
           
@@ -288,7 +306,7 @@ const MainLayout: React.FC = () => {
       </Layout>
       
       <Footer className="app-footer">
-        PSI管理系统 ©{new Date().getFullYear()} Created by XiongZe
+        PSI管理系统 ©{new Date().getFullYear()} Created by lifei
       </Footer>
     </Layout>
   );

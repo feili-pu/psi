@@ -164,25 +164,25 @@ const Login: React.FC = () => {
               PSI管理系统
             </Title>
             <Text className="auth-subtitle">
-              采购、销售、库存协同工作台
+              销售、采购、库存与财务协同工作台
             </Text>
           </div>
 
           <div className="auth-metrics">
             <div className="auth-metric">
-              <ShopOutlined />
-              <span>采购</span>
-              <strong>询价 / 比价 / 订单</strong>
-            </div>
-            <div className="auth-metric">
               <BarChartOutlined />
               <span>销售</span>
-              <strong>报价 / 订单 / 统计</strong>
+              <strong>报价 / 订单 / 应收</strong>
+            </div>
+            <div className="auth-metric">
+              <ShopOutlined />
+              <span>采购</span>
+              <strong>申请 / 询价 / 应付</strong>
             </div>
             <div className="auth-metric">
               <InboxOutlined />
               <span>库存</span>
-              <strong>入库 / 盘点 / 序列号</strong>
+              <strong>入库 / 盘点 / 流水</strong>
             </div>
           </div>
 
@@ -198,7 +198,7 @@ const Login: React.FC = () => {
         <Card className="auth-card" bodyStyle={{ padding: 0 }}>
           <div className="auth-card-header">
             <Title level={2}>登录系统</Title>
-            <Text>使用管理员账号进入业务工作台</Text>
+            <Text>使用分配的账号进入业务工作台</Text>
           </div>
 
         <Tabs
@@ -525,11 +525,11 @@ const Login: React.FC = () => {
         {/* 底部信息 */}
         <div className="auth-footer-note">
           <Text type="secondary">
-            © 2024 PSI管理系统. All rights reserved.
+            © {new Date().getFullYear()} PSI管理系统. All rights reserved.
           </Text>
           <br />
           <Text type="secondary">
-            技术支持：系统开发团队 | 服务热线：400-123-4567
+            Created by lifei
           </Text>
         </div>
       </Card>

@@ -179,62 +179,32 @@ class RoleService {
 }
 const permissionTreeData: DataNode[] = [
   {
-    title: '工作台',
-    key: 'dashboard',
-    children: [
-      { title: '查看工作台', key: 'dashboard:view' },
-      { title: '个人设置', key: 'dashboard:profile' },
-    ],
-  },
-  {
     title: '销售管理',
     key: 'sales',
     children: [
       {
         title: '销售订单',
-        key: 'sales:orders',
+        key: 'sales:order',
         children: [
-          { title: '查看订单', key: 'sales:orders:view' },
-          { title: '创建订单', key: 'sales:orders:create' },
-          { title: '编辑订单', key: 'sales:orders:edit' },
-          { title: '删除订单', key: 'sales:orders:delete' },
-          { title: '审核订单', key: 'sales:orders:review' },
-          { title: '审批订单', key: 'sales:orders:approve' },
-          { title: '订单跟踪', key: 'sales:orders:track' },
-          { title: '财务信息', key: 'sales:orders:financial:view' },
+          { title: '查看销售订单', key: 'sales:order:read' },
+          { title: '创建销售订单', key: 'sales:order:create' },
+          { title: '修改销售订单', key: 'sales:order:update' },
+          { title: '删除销售订单', key: 'sales:order:delete' },
         ]
       },
       {
         title: '销售报价',
-        key: 'sales:quotations',
+        key: 'sales:quotation',
         children: [
-          { title: '查看报价', key: 'sales:quotations:view' },
-          { title: '创建报价', key: 'sales:quotations:create' },
-          { title: '编辑报价', key: 'sales:quotations:edit' },
-          { title: '删除报价', key: 'sales:quotations:delete' },
-          { title: '发送报价', key: 'sales:quotations:send' },
-          { title: '审批报价', key: 'sales:quotations:approve' },
+          { title: '查看销售报价', key: 'sales:quotation:read' },
+          { title: '创建销售报价', key: 'sales:quotation:create' },
+          { title: '修改销售报价', key: 'sales:quotation:update' },
+          { title: '删除销售报价', key: 'sales:quotation:delete' },
+          { title: '发送销售报价', key: 'sales:quotation:send' },
+          { title: '接受销售报价', key: 'sales:quotation:accept' },
         ]
       },
-      {
-        title: '客户管理',
-        key: 'sales:customers',
-        children: [
-          { title: '查看客户', key: 'sales:customers:view' },
-          { title: '创建客户', key: 'sales:customers:create' },
-          { title: '编辑客户', key: 'sales:customers:edit' },
-          { title: '客户管理', key: 'sales:customers:manage' },
-        ]
-      },
-      {
-        title: '团队管理',
-        key: 'sales:team',
-        children: [
-          { title: '团队管理', key: 'sales:team:manage' },
-          { title: '业绩考核', key: 'sales:team:performance' },
-        ]
-      },
-      { title: '销售统计', key: 'sales:statistics:view' },
+      { title: '查看销售统计', key: 'sales:statistics:read' },
     ],
   },
   {
@@ -243,138 +213,167 @@ const permissionTreeData: DataNode[] = [
     children: [
       {
         title: '采购申请',
-        key: 'purchase:requests',
+        key: 'purchase:request',
         children: [
-          { title: '查看申请', key: 'purchase:requests:view' },
-          { title: '创建申请', key: 'purchase:requests:create' },
-          { title: '编辑申请', key: 'purchase:requests:edit' },
-          { title: '审核申请', key: 'purchase:requests:review' },
-          { title: '审批申请', key: 'purchase:requests:approve' },
+          { title: '查看采购申请', key: 'purchase:request:read' },
+          { title: '创建采购申请', key: 'purchase:request:create' },
+          { title: '修改采购申请', key: 'purchase:request:update' },
+          { title: '删除采购申请', key: 'purchase:request:delete' },
+        ]
+      },
+      {
+        title: '采购询价',
+        key: 'purchase:inquiry',
+        children: [
+          { title: '查看采购询价', key: 'purchase:inquiry:read' },
+          { title: '创建采购询价', key: 'purchase:inquiry:create' },
+          { title: '修改采购询价', key: 'purchase:inquiry:update' },
+          { title: '删除采购询价', key: 'purchase:inquiry:delete' },
+        ]
+      },
+      {
+        title: '供应商报价',
+        key: 'purchase:quotation',
+        children: [
+          { title: '查看供应商报价', key: 'purchase:quotation:read' },
+          { title: '创建供应商报价', key: 'purchase:quotation:create' },
+          { title: '修改供应商报价', key: 'purchase:quotation:update' },
+          { title: '删除供应商报价', key: 'purchase:quotation:delete' },
+        ]
+      },
+      {
+        title: '采购比价',
+        key: 'purchase:comparison',
+        children: [
+          { title: '查看采购比价', key: 'purchase:comparison:read' },
+          { title: '创建采购比价', key: 'purchase:comparison:create' },
         ]
       },
       {
         title: '采购订单',
-        key: 'purchase:orders',
+        key: 'purchase:order',
         children: [
-          { title: '查看订单', key: 'purchase:orders:view' },
-          { title: '创建订单', key: 'purchase:orders:create' },
-          { title: '编辑订单', key: 'purchase:orders:edit' },
-          { title: '删除订单', key: 'purchase:orders:delete' },
-          { title: '审核订单', key: 'purchase:orders:review' },
-          { title: '审批订单', key: 'purchase:orders:approve' },
-          { title: '财务信息', key: 'purchase:orders:financial:view' },
+          { title: '查看采购订单', key: 'purchase:order:read' },
+          { title: '创建采购订单', key: 'purchase:order:create' },
+          { title: '修改采购订单', key: 'purchase:order:update' },
+          { title: '删除采购订单', key: 'purchase:order:delete' },
         ]
       },
       {
-        title: '供应商管理',
-        key: 'purchase:suppliers',
+        title: '采购应付',
+        key: 'purchase:payable',
         children: [
-          { title: '查看供应商', key: 'purchase:suppliers:view' },
-          { title: '编辑供应商', key: 'purchase:suppliers:edit' },
-          { title: '供应商管理', key: 'purchase:suppliers:manage' },
+          { title: '查看采购应付', key: 'purchase:payable:read' },
+          { title: '修改采购应付', key: 'purchase:payable:update' },
         ]
       },
-      {
-        title: '询价比价',
-        key: 'purchase:inquiry',
-        children: [
-          { title: '创建询价', key: 'purchase:inquiry:create' },
-          { title: '价格比较', key: 'purchase:comparison:create' },
-        ]
-      },
-      {
-        title: '合同管理',
-        key: 'purchase:contracts',
-        children: [
-          { title: '合同管理', key: 'purchase:contracts:manage' },
-        ]
-      },
-      { title: '采购统计', key: 'purchase:statistics:view' },
+      { title: '查看采购统计', key: 'purchase:statistics:read' },
     ],
   },
   {
     title: '库存管理',
     key: 'inventory',
     children: [
-      { title: '库存查看', key: 'inventory:view' },
-      { title: '库存盘点', key: 'inventory:check' },
-      { title: '入库管理', key: 'inventory:receipt' },
-      { title: '出库管理', key: 'inventory:issue' },
-      { title: '库存调拨', key: 'inventory:transfer' },
-      { title: '库存调整', key: 'inventory:adjust' },
-      { title: '库位管理', key: 'inventory:location:manage' },
-      { title: '质检入库', key: 'inventory:receipt:qc' },
-      { title: '质检出库', key: 'inventory:issue:qc' },
-      { title: '库存统计', key: 'inventory:statistics:view' },
-      { title: '人员管理', key: 'inventory:staff:manage' },
-    ],
-  },
-  {
-    title: '财务管理',
-    key: 'finance',
-    children: [
       {
-        title: '账务管理',
-        key: 'finance:accounts',
+        title: '库存入库',
+        key: 'inventory:receipt',
         children: [
-          { title: '查看账务', key: 'finance:accounts:view' },
-          { title: '账务管理', key: 'finance:accounts:manage' },
+          { title: '查看库存入库', key: 'inventory:receipt:read' },
+          { title: '创建库存入库', key: 'inventory:receipt:create' },
+          { title: '修改库存入库', key: 'inventory:receipt:update' },
+          { title: '删除库存入库', key: 'inventory:receipt:delete' },
         ]
       },
-      { title: '凭证录入', key: 'finance:vouchers:create' },
-      { title: '财务报表', key: 'finance:reports:view' },
-      { title: '财务分析', key: 'finance:analysis:view' },
-    ],
-  },
-  {
-    title: '质量管理',
-    key: 'quality',
-    children: [
-      { title: '质检报告', key: 'quality:reports:create' },
-      { title: '质量标准', key: 'quality:standards:view' },
-    ],
-  },
-  {
-    title: '客户服务',
-    key: 'service',
-    children: [
-      { title: '工单管理', key: 'service:tickets:manage' },
-      { title: '客户反馈', key: 'service:feedback:handle' },
-    ],
-  },
-  {
-    title: '统计报表',
-    key: 'statistics',
-    children: [
-      { title: '销售报表', key: 'statistics:sales' },
-      { title: '采购报表', key: 'statistics:purchase' },
-      { title: '库存报表', key: 'statistics:inventory' },
-      { title: '财务报表', key: 'statistics:financial' },
-      { title: '成本分析', key: 'statistics:cost' },
-      { title: '利润分析', key: 'statistics:profit' },
-      { title: '客户分析', key: 'statistics:customer' },
-      { title: '供应商分析', key: 'statistics:supplier' },
-      { title: '仓库分析', key: 'statistics:warehouse' },
-    ],
-  },
-  {
-    title: '数据分析',
-    key: 'analytics',
-    children: [
-      { title: '高级分析', key: 'analytics:advanced' },
-      { title: '自定义报表', key: 'reports:custom:create' },
-      { title: '数据导出', key: 'data:export' },
-      { title: '数据分析', key: 'data:analysis' },
+      {
+        title: '库存盘点',
+        key: 'inventory:check',
+        children: [
+          { title: '查看库存盘点', key: 'inventory:check:view' },
+          { title: '创建库存盘点', key: 'inventory:check:create' },
+          { title: '修改库存盘点', key: 'inventory:check:update' },
+          { title: '删除库存盘点', key: 'inventory:check:delete' },
+        ]
+      },
+      {
+        title: '物料领用',
+        key: 'material:requisition',
+        children: [
+          { title: '查看物料领用', key: 'material:requisition:view' },
+          { title: '创建物料领用', key: 'material:requisition:create' },
+          { title: '修改物料领用', key: 'material:requisition:update' },
+          { title: '删除物料领用', key: 'material:requisition:delete' },
+        ]
+      },
+      {
+        title: '物料退库',
+        key: 'material:return',
+        children: [
+          { title: '查看物料退库', key: 'material:return:view' },
+          { title: '创建物料退库', key: 'material:return:create' },
+          { title: '修改物料退库', key: 'material:return:update' },
+          { title: '删除物料退库', key: 'material:return:delete' },
+        ]
+      },
+      {
+        title: '产品入库',
+        key: 'product:receipt',
+        children: [
+          { title: '查看产品入库', key: 'product:receipt:view' },
+          { title: '创建产品入库', key: 'product:receipt:create' },
+          { title: '修改产品入库', key: 'product:receipt:update' },
+          { title: '删除产品入库', key: 'product:receipt:delete' },
+        ]
+      },
+      {
+        title: '产品组装',
+        key: 'product:assembly',
+        children: [
+          { title: '查看产品组装', key: 'product:assembly:view' },
+          { title: '创建产品组装', key: 'product:assembly:create' },
+          { title: '修改产品组装', key: 'product:assembly:update' },
+          { title: '删除产品组装', key: 'product:assembly:delete' },
+        ]
+      },
+      {
+        title: '产品拆解',
+        key: 'product:disassembly',
+        children: [
+          { title: '查看产品拆解', key: 'product:disassembly:view' },
+          { title: '创建产品拆解', key: 'product:disassembly:create' },
+          { title: '修改产品拆解', key: 'product:disassembly:update' },
+          { title: '删除产品拆解', key: 'product:disassembly:delete' },
+        ]
+      },
+      { title: '查看序列号库存', key: 'serial:inventory:view' },
+      {
+        title: '序列号入库',
+        key: 'serial:receipt',
+        children: [
+          { title: '查看序列号入库', key: 'serial:receipt:view' },
+          { title: '创建序列号入库', key: 'serial:receipt:create' },
+          { title: '修改序列号入库', key: 'serial:receipt:update' },
+          { title: '删除序列号入库', key: 'serial:receipt:delete' },
+        ]
+      },
     ],
   },
   {
     title: '系统管理',
     key: 'system',
     children: [
-      { title: '用户管理', key: 'system:users:manage' },
-      { title: '角色管理', key: 'system:roles:manage' },
-      { title: '权限管理', key: 'system:permissions:manage' },
-      { title: '系统设置', key: 'system:settings:manage' },
+      { title: '查看用户', key: 'user:read' },
+      { title: '创建用户', key: 'user:create' },
+      { title: '修改用户', key: 'user:update' },
+      { title: '删除用户', key: 'user:delete' },
+      { title: '分配用户角色', key: 'user:assign_role' },
+      { title: '移除用户角色', key: 'user:remove_role' },
+      { title: '查看角色', key: 'role:read' },
+      { title: '创建角色', key: 'role:create' },
+      { title: '修改角色', key: 'role:update' },
+      { title: '删除角色', key: 'role:delete' },
+      { title: '分配角色权限', key: 'role:assign_permission' },
+      { title: '移除角色权限', key: 'role:remove_permission' },
+      { title: '权限管理', key: 'permission:manage' },
     ],
   },
 ];
