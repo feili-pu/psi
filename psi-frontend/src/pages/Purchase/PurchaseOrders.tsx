@@ -38,10 +38,10 @@ const { Option } = Select;
 
 // 采购订单状态枚举
 const PurchaseOrderStatus = {
-  DRAFT: 'DRAFT',
-  SUBMITTED: 'SUBMITTED',
-  APPROVED: 'APPROVED',
-  ORDERED: 'ORDERED',
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PRODUCING: 'PRODUCING',
+  SHIPPED: 'SHIPPED',
   RECEIVED: 'RECEIVED',
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED'
@@ -49,10 +49,10 @@ const PurchaseOrderStatus = {
 
 // 状态标签配置
 const statusConfig: Record<string, { color: string; text: string }> = {
-  [PurchaseOrderStatus.DRAFT]: { color: 'default', text: '草稿' },
-  [PurchaseOrderStatus.SUBMITTED]: { color: 'blue', text: '已提交' },
-  [PurchaseOrderStatus.APPROVED]: { color: 'cyan', text: '已审批' },
-  [PurchaseOrderStatus.ORDERED]: { color: 'orange', text: '已下单' },
+  [PurchaseOrderStatus.PENDING]: { color: 'blue', text: '待确认' },
+  [PurchaseOrderStatus.CONFIRMED]: { color: 'cyan', text: '已确认' },
+  [PurchaseOrderStatus.PRODUCING]: { color: 'orange', text: '生产中' },
+  [PurchaseOrderStatus.SHIPPED]: { color: 'purple', text: '已发货' },
   [PurchaseOrderStatus.RECEIVED]: { color: 'purple', text: '已收货' },
   [PurchaseOrderStatus.COMPLETED]: { color: 'green', text: '已完成' },
   [PurchaseOrderStatus.CANCELLED]: { color: 'red', text: '已取消' }
@@ -257,15 +257,15 @@ const PurchaseOrders: React.FC = () => {
       switch (action) {
         case 'submit':
           await PurchaseOrderService.submitOrder(orderId);
-          message.success('订单已提交');
+          message.success('订单已确认');
           break;
         case 'approve':
           await PurchaseOrderService.approveOrder(orderId);
-          message.success('订单已审批');
+          message.success('订单已开始生产');
           break;
         case 'place':
           await PurchaseOrderService.placeOrder(orderId);
-          message.success('订单已下单');
+          message.success('订单已发货');
           break;
         case 'receive':
           await PurchaseOrderService.receiveOrder(orderId);
@@ -363,22 +363,22 @@ const PurchaseOrders: React.FC = () => {
             <Tag color={config?.color || 'default'}>{config?.text || status}</Tag>
             {/* 状态操作按钮 */}
             <Space size="small">
-              {status === PurchaseOrderStatus.DRAFT && (
+              {status === PurchaseOrderStatus.PENDING && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'submit')}>
-                  提交
+                  确认
                 </Button>
               )}
-              {status === PurchaseOrderStatus.SUBMITTED && (
+              {status === PurchaseOrderStatus.CONFIRMED && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'approve')}>
-                  审批
+                  开始生产
                 </Button>
               )}
-              {status === PurchaseOrderStatus.APPROVED && (
+              {status === PurchaseOrderStatus.PRODUCING && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'place')}>
-                  下单
+                  发货
                 </Button>
               )}
-              {status === PurchaseOrderStatus.ORDERED && (
+              {status === PurchaseOrderStatus.SHIPPED && (
                 <Button size="small" type="link" onClick={() => handleStatusChange(record.id!, 'receive')}>
                   收货
                 </Button>
@@ -388,7 +388,7 @@ const PurchaseOrders: React.FC = () => {
                   完成
                 </Button>
               )}
-              {(status === PurchaseOrderStatus.DRAFT || status === PurchaseOrderStatus.SUBMITTED) && (
+              {(status === PurchaseOrderStatus.PENDING || status === PurchaseOrderStatus.CONFIRMED) && (
                 <Button size="small" type="link" danger onClick={() => handleStatusChange(record.id!, 'cancel')}>
                   取消
                 </Button>
@@ -437,9 +437,9 @@ const PurchaseOrders: React.FC = () => {
   // 统计数据
   const statistics = {
     total: orders.length,
-    submitted: orders.filter(o => o.status === PurchaseOrderStatus.SUBMITTED).length,
-    approved: orders.filter(o => o.status === PurchaseOrderStatus.APPROVED).length,
-    ordered: orders.filter(o => o.status === PurchaseOrderStatus.ORDERED).length,
+    submitted: orders.filter(o => o.status === PurchaseOrderStatus.CONFIRMED).length,
+    approved: orders.filter(o => o.status === PurchaseOrderStatus.PRODUCING).length,
+    ordered: orders.filter(o => o.status === PurchaseOrderStatus.SHIPPED).length,
     totalAmount: orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
   };
 
@@ -460,7 +460,7 @@ const PurchaseOrders: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="已提交"
+              title="已确认"
               value={statistics.submitted}
               suffix="单"
               valueStyle={{ color: '#52c41a' }}
@@ -470,7 +470,7 @@ const PurchaseOrders: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="已审批"
+              title="生产中"
               value={statistics.approved}
               suffix="单"
               valueStyle={{ color: '#faad14' }}

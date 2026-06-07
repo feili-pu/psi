@@ -4,6 +4,7 @@ import com.lifei.psi.entity.User;
 import com.lifei.psi.entity.Role;
 import com.lifei.psi.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,8 @@ public class UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public List<User> getAllUsers() {
         List<User> users = userMapper.findAll();
@@ -49,6 +52,12 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2")) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        if (user.getStatus() == null) {
+            user.setStatus(1);
+        }
         userMapper.insert(user);
         return user; // ID会自动填充
     }
@@ -141,6 +150,13 @@ public boolean clearUserRoles(Long userId) {
         return false;
     }
     return userMapper.clearUserRoles(userId) >= 0;
+}
+
+public boolean resetPassword(Long userId, String rawPassword) {
+    if (userId == null || rawPassword == null || rawPassword.trim().isEmpty()) {
+        return false;
+    }
+    return userMapper.updatePassword(userId, passwordEncoder.encode(rawPassword)) > 0;
 }
 
 }

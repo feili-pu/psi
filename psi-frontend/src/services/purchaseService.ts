@@ -217,49 +217,43 @@ export class PurchaseOrderService {
 
   // 提交订单
   static async submitOrder(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}/submit`, {
+    const response = await fetch(`${this.baseUrl}/${id}/confirm`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
     
     if (!result.success) {
-      throw new Error(result.message || '提交订单失败');
+      throw new Error(result.message || '确认订单失败');
     }
   }
 
   // 审批订单
   static async approveOrder(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}/approve`, {
+    const response = await fetch(`${this.baseUrl}/${id}/start-production`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
     
     if (!result.success) {
-      throw new Error(result.message || '审批订单失败');
+      throw new Error(result.message || '开始生产失败');
     }
   }
 
   // 下单
   static async placeOrder(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}/place`, {
+    const response = await fetch(`${this.baseUrl}/${id}/ship`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
     
     if (!result.success) {
-      throw new Error(result.message || '下单失败');
+      throw new Error(result.message || '发货失败');
     }
   }
 
@@ -267,9 +261,7 @@ export class PurchaseOrderService {
   static async receiveOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/receive`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -283,9 +275,7 @@ export class PurchaseOrderService {
   static async completeOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/complete`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -299,9 +289,7 @@ export class PurchaseOrderService {
   static async cancelOrder(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/cancel`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -329,9 +317,7 @@ export class PurchaseOrderService {
   static async getOrdersByStatus(status: string): Promise<PurchaseOrder[]> {
     const response = await fetch(`${this.baseUrl}/status/${status}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -345,9 +331,7 @@ export class PurchaseOrderService {
   static async getOrdersByPurchaser(purchaser: string): Promise<PurchaseOrder[]> {
     const response = await fetch(`${this.baseUrl}/purchaser/${encodeURIComponent(purchaser)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -380,9 +364,7 @@ export class PurchaseRequestService {
   static async getRequestById(id: number): Promise<{ request: PurchaseRequest; items: PurchaseRequestItem[] }> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -396,9 +378,7 @@ export class PurchaseRequestService {
   static async createRequest(requestData: PurchaseRequestRequest): Promise<PurchaseRequest> {
     const response = await fetch(this.baseUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
       body: JSON.stringify(requestData),
     });
     
@@ -415,9 +395,7 @@ export class PurchaseRequestService {
   static async updateRequest(id: number, requestData: PurchaseRequestRequest): Promise<PurchaseRequest> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
       body: JSON.stringify(requestData),
     });
     
@@ -434,9 +412,7 @@ export class PurchaseRequestService {
   static async deleteRequest(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -448,27 +424,14 @@ export class PurchaseRequestService {
 
   // 提交申请
   static async submitRequest(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}/submit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    const result = await response.json();
-    
-    if (!result.success) {
-      throw new Error(result.message || '提交申请失败');
-    }
+    await this.approveRequest(id);
   }
 
   // 审批申请
   static async approveRequest(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/approve`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -482,9 +445,7 @@ export class PurchaseRequestService {
   static async rejectRequest(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/reject`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -496,11 +457,9 @@ export class PurchaseRequestService {
 
   // 根据申请人搜索
   static async searchByApplicant(applicant: string): Promise<PurchaseRequest[]> {
-    const response = await fetch(`${this.baseUrl}/search?applicant=${encodeURIComponent(applicant)}`, {
+    const response = await fetch(`${this.baseUrl}/applicant/${encodeURIComponent(applicant)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -514,9 +473,7 @@ export class PurchaseRequestService {
   static async getRequestsByStatus(status: string): Promise<PurchaseRequest[]> {
     const response = await fetch(`${this.baseUrl}/status/${status}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -528,11 +485,9 @@ export class PurchaseRequestService {
 
   // 根据部门查询
   static async getRequestsByDepartment(department: string): Promise<PurchaseRequest[]> {
-    const response = await fetch(`${this.baseUrl}/department/${encodeURIComponent(department)}`, {
+    const response = await fetch(`${this.baseUrl}/search?department=${encodeURIComponent(department)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -551,9 +506,7 @@ export class SupplierQuotationService {
   static async getAllQuotations(): Promise<SupplierQuotation[]> {
     const response = await fetch(this.baseUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -567,9 +520,7 @@ export class SupplierQuotationService {
   static async getQuotationById(id: number): Promise<{ quotation: SupplierQuotation; items: SupplierQuotationItem[] }> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -583,9 +534,7 @@ export class SupplierQuotationService {
   static async createQuotation(quotationData: any): Promise<SupplierQuotation> {
     const response = await fetch(this.baseUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
       body: JSON.stringify(quotationData),
     });
     
@@ -602,9 +551,7 @@ export class SupplierQuotationService {
   static async updateQuotation(id: number, quotationData: any): Promise<SupplierQuotation> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
       body: JSON.stringify(quotationData),
     });
     
@@ -621,9 +568,7 @@ export class SupplierQuotationService {
   static async deleteQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -635,11 +580,9 @@ export class SupplierQuotationService {
 
   // 接受报价
   static async acceptQuotation(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}/accept`, {
+    const response = await fetch(`${this.baseUrl}/${id}/select`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -653,9 +596,7 @@ export class SupplierQuotationService {
   static async rejectQuotation(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}/reject`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -669,9 +610,7 @@ export class SupplierQuotationService {
   static async searchBySupplier(supplierName: string): Promise<SupplierQuotation[]> {
     const response = await fetch(`${this.baseUrl}/search?supplierName=${encodeURIComponent(supplierName)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -685,9 +624,7 @@ export class SupplierQuotationService {
   static async getQuotationsByStatus(status: string): Promise<SupplierQuotation[]> {
     const response = await fetch(`${this.baseUrl}/status/${status}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     if (!response.ok) {
@@ -706,9 +643,7 @@ export class PurchaseStatisticsService {
   static async getDashboardData(): Promise<any> {
     const response = await fetch(`${this.baseUrl}/dashboard`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -734,9 +669,7 @@ export class PurchaseStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -762,9 +695,7 @@ export class PurchaseStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -790,9 +721,7 @@ export class PurchaseStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -818,9 +747,7 @@ export class PurchaseStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -846,9 +773,7 @@ export class PurchaseStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();

@@ -36,6 +36,9 @@ public interface UserMapper {
             "phone=#{phone}, department=#{department}, position=#{position}, status=#{status} WHERE id=#{id}")
     int update(User user);
 
+    @Update("UPDATE users SET password=#{password} WHERE id=#{id}")
+    int updatePassword(@Param("id") Long id, @Param("password") String password);
+
     // 删除用户
     @Delete("DELETE FROM users WHERE id = #{id}")
     int deleteById(Long id);

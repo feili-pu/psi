@@ -22,7 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/purchase/statistics")
 @Tag(name = "采购统计管理", description = "采购相关的统计报表和分析")
-@RequirePermission("statistics:purchase")
+@RequirePermission("purchase:statistics:read")
 public class PurchaseStatisticsController {
 
     @Autowired

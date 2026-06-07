@@ -74,6 +74,9 @@ public class InventoryReceiptService {
     public InventoryReceipt createReceipt(InventoryReceipt receipt, List<InventoryReceiptItem> items) {
         // 生成入库单号
         receipt.setReceiptNo(generateReceiptNo(receipt.getReceiptType()));
+        if (isBlank(receipt.getStatus())) {
+            receipt.setStatus("PENDING");
+        }
         receipt.setReceiptDate(LocalDateTime.now());
         receipt.setCreatedTime(LocalDateTime.now());
         receipt.setUpdatedTime(LocalDateTime.now());
@@ -269,5 +272,9 @@ public class InventoryReceiptService {
         }
         
         return prefix + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

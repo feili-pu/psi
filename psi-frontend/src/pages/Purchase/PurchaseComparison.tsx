@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Button,
@@ -31,6 +31,7 @@ import {
   TrophyOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { PurchaseRealApi, RealResourceUtils } from '../../services/realResourceService';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -49,114 +50,15 @@ const statusConfig = {
   [ComparisonStatus.DRAFT]: { color: 'default', text: '草稿', icon: <EditOutlined /> },
   [ComparisonStatus.COMPARING]: { color: 'blue', text: '比价中', icon: <SwapOutlined /> },
   [ComparisonStatus.COMPLETED]: { color: 'green', text: '已完成', icon: <CheckCircleOutlined /> },
-  [ComparisonStatus.CANCELLED]: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> }
+  [ComparisonStatus.CANCELLED]: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> },
+  PENDING: { color: 'blue', text: '待比价', icon: <SwapOutlined /> },
+  COMPLETED: { color: 'green', text: '已完成', icon: <CheckCircleOutlined /> },
+  CANCELLED: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> }
 };
 
-// 模拟采购比价数据
-const mockPurchaseComparisons = [
-  {
-    id: 1,
-    comparisonNo: 'PC202401001',
-    comparisonTitle: '办公设备采购比价',
-    department: '行政部',
-    comparer: '张三',
-    comparisonDate: '2024-01-15',
-    status: ComparisonStatus.COMPLETED,
-    supplierCount: 3,
-    selectedSupplier: '深圳电子科技有限公司',
-    totalSavings: 15600.00,
-    items: [
-      { 
-        productName: '笔记本电脑', 
-        quantity: 10,
-        suppliers: [
-          { name: '深圳电子科技', price: 8500, total: 85000, score: 95, selected: true },
-          { name: '北京办公用品', price: 8800, total: 88000, score: 88, selected: false },
-          { name: '广州设备公司', price: 9200, total: 92000, score: 82, selected: false }
-        ]
-      },
-      { 
-        productName: '打印机', 
-        quantity: 2,
-        suppliers: [
-          { name: '深圳电子科技', price: 15000, total: 30000, score: 92, selected: true },
-          { name: '北京办公用品', price: 15500, total: 31000, score: 90, selected: false },
-          { name: '广州设备公司', price: 16000, total: 32000, score: 85, selected: false }
-        ]
-      }
-    ],
-    criteria: [
-      { name: '价格', weight: 40, description: '报价竞争力' },
-      { name: '质量', weight: 30, description: '产品质量和品牌' },
-      { name: '服务', weight: 20, description: '售后服务和支持' },
-      { name: '交期', weight: 10, description: '交货时间和可靠性' }
-    ],
-    remark: '综合评估后选择深圳电子科技，性价比最高'
-  },
-  {
-    id: 2,
-    comparisonNo: 'PC202401002',
-    comparisonTitle: '生产原料采购比价',
-    department: '生产部',
-    comparer: '王五',
-    comparisonDate: '2024-01-16',
-    status: ComparisonStatus.COMPARING,
-    supplierCount: 4,
-    selectedSupplier: null,
-    totalSavings: 0,
-    items: [
-      { 
-        productName: '钢材', 
-        quantity: 500,
-        suppliers: [
-          { name: '钢铁集团A', price: 150, total: 75000, score: 88, selected: false },
-          { name: '钢铁集团B', price: 145, total: 72500, score: 92, selected: false },
-          { name: '钢铁集团C', price: 155, total: 77500, score: 85, selected: false },
-          { name: '钢铁集团D', price: 148, total: 74000, score: 90, selected: false }
-        ]
-      }
-    ],
-    criteria: [
-      { name: '价格', weight: 50, description: '报价竞争力' },
-      { name: '质量', weight: 25, description: '材料质量标准' },
-      { name: '供应', weight: 15, description: '供应稳定性' },
-      { name: '交期', weight: 10, description: '交货及时性' }
-    ],
-    remark: '正在进行综合评估，预计本周完成'
-  },
-  {
-    id: 3,
-    comparisonNo: 'PC202401003',
-    comparisonTitle: '实验室设备比价',
-    department: '研发部',
-    comparer: '赵六',
-    comparisonDate: '2024-01-17',
-    status: ComparisonStatus.DRAFT,
-    supplierCount: 2,
-    selectedSupplier: null,
-    totalSavings: 0,
-    items: [
-      { 
-        productName: '测试仪器', 
-        quantity: 2,
-        suppliers: [
-          { name: '科学仪器公司', price: 120000, total: 240000, score: 0, selected: false },
-          { name: '精密仪器公司', price: 125000, total: 250000, score: 0, selected: false }
-        ]
-      }
-    ],
-    criteria: [
-      { name: '价格', weight: 30, description: '设备价格' },
-      { name: '技术', weight: 40, description: '技术先进性' },
-      { name: '服务', weight: 20, description: '技术支持' },
-      { name: '品牌', weight: 10, description: '品牌知名度' }
-    ],
-    remark: '等待更多供应商报价'
-  }
-];
-
 const PurchaseComparison: React.FC = () => {
-  const [comparisons, setComparisons] = useState(mockPurchaseComparisons);
+  const [comparisons, setComparisons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -164,6 +66,37 @@ const PurchaseComparison: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedComparison, setSelectedComparison] = useState<any>(null);
   const [form] = Form.useForm();
+
+  const mapComparison = (comparison: any) => ({
+    ...comparison,
+    comparisonNo: comparison.comparisonNo || `PC#${comparison.id}`,
+    comparisonTitle: comparison.comparisonTitle || comparison.title,
+    department: comparison.department || '-',
+    comparisonDate: comparison.comparisonDate || comparison.createdTime?.slice(0, 10) || '-',
+    selectedSupplier: comparison.selectedSupplier || (comparison.selectedQuotationId ? `报价#${comparison.selectedQuotationId}` : null),
+    supplierCount: comparison.supplierCount || 0,
+    totalSavings: comparison.totalSavings || 0,
+    remark: comparison.remark || comparison.remarks,
+    items: comparison.items || [],
+    criteria: comparison.criteria || []
+  });
+
+  const loadComparisons = async () => {
+    setLoading(true);
+    try {
+      const data = await PurchaseRealApi.listComparisons();
+      setComparisons(data.map(mapComparison));
+    } catch (error) {
+      message.error('加载采购比价失败: ' + (error as Error).message);
+      setComparisons([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadComparisons();
+  }, []);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -244,7 +177,7 @@ const PurchaseComparison: React.FC = () => {
       key: 'status',
       width: 100,
       render: (status: string) => {
-        const config = statusConfig[status];
+        const config = statusConfig[status] || statusConfig.PENDING;
         return (
           <Tag color={config.color} icon={config.icon}>
             {config.text}
@@ -271,11 +204,11 @@ const PurchaseComparison: React.FC = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record.id)}
-            disabled={record.status === ComparisonStatus.COMPLETED}
+            disabled={record.status === ComparisonStatus.COMPLETED || record.status === 'COMPLETED'}
           >
             编辑
           </Button>
-          {record.status === ComparisonStatus.COMPARING && (
+          {(record.status === ComparisonStatus.COMPARING || record.status === 'PENDING') && (
             <Button
               type="text"
               icon={<CheckCircleOutlined />}
@@ -292,7 +225,7 @@ const PurchaseComparison: React.FC = () => {
             size="small"
             danger
             onClick={() => handleDelete(record.id)}
-            disabled={record.status === ComparisonStatus.COMPLETED}
+            disabled={record.status === ComparisonStatus.COMPLETED || record.status === 'COMPLETED'}
           >
             删除
           </Button>
@@ -321,11 +254,10 @@ const PurchaseComparison: React.FC = () => {
     Modal.confirm({
       title: '完成比价',
       content: '确定要完成这个采购比价吗？完成后将无法修改。',
-      onOk() {
-        setComparisons(comparisons.map(c => 
-          c.id === id ? { ...c, status: ComparisonStatus.COMPLETED } : c
-        ));
+      async onOk() {
+        await PurchaseRealApi.completeComparison(id);
         message.success('比价已完成');
+        loadComparisons();
       },
     });
   };
@@ -335,9 +267,10 @@ const PurchaseComparison: React.FC = () => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这个采购比价吗？',
-      onOk() {
-        setComparisons(comparisons.filter(c => c.id !== id));
+      async onOk() {
+        await PurchaseRealApi.deleteComparison(id);
         message.success('删除成功');
+        loadComparisons();
       },
     });
   };
@@ -351,37 +284,17 @@ const PurchaseComparison: React.FC = () => {
 
   // 处理导出
   const handleExport = () => {
-    message.info('导出采购比价数据');
+    RealResourceUtils.exportCsv('采购比价.csv', filteredComparisons);
   };
 
   // 处理保存
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      if (selectedComparison) {
-        // 编辑比价
-        setComparisons(comparisons.map(c => 
-          c.id === selectedComparison.id ? { ...c, ...values } : c
-        ));
-        message.success('比价更新成功');
-      } else {
-        // 新建比价
-        const newComparison = {
-          id: Math.max(...comparisons.map(c => c.id)) + 1,
-          comparisonNo: `PC${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-          ...values,
-          status: ComparisonStatus.DRAFT,
-          comparisonDate: new Date().toISOString().split('T')[0],
-          supplierCount: 0,
-          selectedSupplier: null,
-          totalSavings: 0,
-          items: [],
-          criteria: []
-        };
-        setComparisons([...comparisons, newComparison]);
-        message.success('比价创建成功');
-      }
+      await PurchaseRealApi.saveComparison(values, selectedComparison?.id);
+      message.success(selectedComparison ? '比价更新成功' : '比价创建成功');
       setEditModalVisible(false);
+      loadComparisons();
     } catch (error) {
       console.error('表单验证失败:', error);
     }
@@ -391,9 +304,9 @@ const PurchaseComparison: React.FC = () => {
   const filteredComparisons = comparisons.filter(comparison => {
     const matchSearch = !searchText || 
       comparison.comparisonNo.toLowerCase().includes(searchText.toLowerCase()) ||
-      comparison.comparisonTitle.toLowerCase().includes(searchText.toLowerCase()) ||
-      comparison.department.toLowerCase().includes(searchText.toLowerCase()) ||
-      comparison.comparer.toLowerCase().includes(searchText.toLowerCase());
+      String(comparison.comparisonTitle || '').toLowerCase().includes(searchText.toLowerCase()) ||
+      String(comparison.department || '').toLowerCase().includes(searchText.toLowerCase()) ||
+      String(comparison.comparer || '').toLowerCase().includes(searchText.toLowerCase());
     const matchStatus = !statusFilter || comparison.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -402,8 +315,8 @@ const PurchaseComparison: React.FC = () => {
   const statistics = {
     total: comparisons.length,
     draft: comparisons.filter(c => c.status === ComparisonStatus.DRAFT).length,
-    comparing: comparisons.filter(c => c.status === ComparisonStatus.COMPARING).length,
-    completed: comparisons.filter(c => c.status === ComparisonStatus.COMPLETED).length,
+    comparing: comparisons.filter(c => c.status === ComparisonStatus.COMPARING || c.status === 'PENDING').length,
+    completed: comparisons.filter(c => c.status === ComparisonStatus.COMPLETED || c.status === 'COMPLETED').length,
     totalSavings: comparisons.reduce((sum, comparison) => sum + comparison.totalSavings, 0)
   };
 
@@ -529,6 +442,7 @@ const PurchaseComparison: React.FC = () => {
             onChange: setSelectedRowKeys,
           }}
           scroll={{ x: 1400 }}
+          loading={loading}
         />
       </Card>
 
@@ -552,8 +466,8 @@ const PurchaseComparison: React.FC = () => {
               </Col>
               <Col span={12}>
                 <p><strong>比价状态：</strong>
-                  <Tag color={statusConfig[selectedComparison.status].color} icon={statusConfig[selectedComparison.status].icon}>
-                    {statusConfig[selectedComparison.status].text}
+                  <Tag color={(statusConfig[selectedComparison.status] || statusConfig.PENDING).color} icon={(statusConfig[selectedComparison.status] || statusConfig.PENDING).icon}>
+                    {(statusConfig[selectedComparison.status] || statusConfig.PENDING).text}
                   </Tag>
                 </p>
                 <p><strong>供应商数量：</strong>{selectedComparison.supplierCount}家</p>
@@ -572,7 +486,7 @@ const PurchaseComparison: React.FC = () => {
             
             <h4>评价标准</h4>
             <Row gutter={16} style={{ marginBottom: '16px' }}>
-              {selectedComparison.criteria.map((criterion: any, index: number) => (
+              {(selectedComparison.criteria || []).map((criterion: any, index: number) => (
                 <Col span={6} key={index}>
                   <Card size="small">
                     <div style={{ textAlign: 'center' }}>
@@ -594,7 +508,7 @@ const PurchaseComparison: React.FC = () => {
             <Divider />
             
             <h4>比价明细</h4>
-            {selectedComparison.items.map((item: any, itemIndex: number) => (
+            {(selectedComparison.items || []).map((item: any, itemIndex: number) => (
               <div key={itemIndex} style={{ marginBottom: '24px' }}>
                 <h5>{item.productName} (数量: {item.quantity})</h5>
                 <Table
@@ -638,7 +552,7 @@ const PurchaseComparison: React.FC = () => {
                       )
                     },
                   ]}
-                  dataSource={item.suppliers}
+                  dataSource={item.suppliers || []}
                   pagination={false}
                   size="small"
                 />
@@ -666,10 +580,19 @@ const PurchaseComparison: React.FC = () => {
           form={form}
           layout="vertical"
           initialValues={{ 
-            status: ComparisonStatus.DRAFT
+            status: 'PENDING'
           }}
         >
           <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="询价单ID"
+                name="inquiryId"
+                rules={[{ required: true, message: '请输入询价单ID' }]}
+              >
+                <InputNumber style={{ width: '100%' }} min={1} placeholder="请输入关联询价单ID" />
+              </Form.Item>
+            </Col>
             <Col span={12}>
               <Form.Item
                 label="比价标题"

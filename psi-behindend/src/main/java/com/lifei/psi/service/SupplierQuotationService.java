@@ -57,6 +57,9 @@ public class SupplierQuotationService {
     public SupplierQuotation createQuotation(SupplierQuotation quotation, List<SupplierQuotationItem> items) {
         // 生成报价单号
         quotation.setQuotationNo(generateQuotationNo());
+        if (isBlank(quotation.getStatus())) {
+            quotation.setStatus("SUBMITTED");
+        }
         quotation.setQuotationDate(LocalDateTime.now());
         quotation.setCreatedTime(LocalDateTime.now());
         quotation.setUpdatedTime(LocalDateTime.now());
@@ -160,5 +163,9 @@ public class SupplierQuotationService {
             }
         }
         return total;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

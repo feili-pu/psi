@@ -70,6 +70,9 @@ public class MaterialRequisitionService {
     public MaterialRequisition createRequisition(MaterialRequisition requisition, List<MaterialRequisitionItem> items) {
         // 生成领料单号
         requisition.setRequisitionNo(generateRequisitionNo());
+        if (isBlank(requisition.getStatus())) {
+            requisition.setStatus("PENDING");
+        }
         requisition.setRequisitionDate(LocalDateTime.now());
         requisition.setCreatedTime(LocalDateTime.now());
         requisition.setUpdatedTime(LocalDateTime.now());
@@ -223,5 +226,9 @@ public class MaterialRequisitionService {
     private String generateRequisitionNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "MR" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

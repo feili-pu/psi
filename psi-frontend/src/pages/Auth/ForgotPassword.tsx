@@ -23,6 +23,7 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone
 } from '@ant-design/icons';
+import AuthService from '../../services/authService';
 
 const { Title, Text, Link } = Typography;
 
@@ -50,23 +51,18 @@ const ForgotPassword: React.FC = () => {
   const handleVerifyIdentity = async (values: any) => {
     setLoading(true);
     try {
-      // 模拟验证用户身份
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // 模拟返回用户信息
-      const mockUserInfo = {
-        username: 'admin',
-        phone: '138****5678',
-        email: 'admin@*****.com',
+      const nextUserInfo = {
+        username: values.username,
+        phone: values.phone,
+        email: values.email,
         ...values
       };
       
-      setUserInfo(mockUserInfo);
+      setUserInfo(nextUserInfo);
       setCurrentStep(ResetSteps.VERIFY_CODE);
       message.success('身份验证成功');
       
-      // 自动发送验证码
-      sendCaptcha();
+      await sendCaptcha(nextUserInfo);
       
     } catch (error) {
       message.error('用户不存在或信息不匹配');
@@ -76,14 +72,16 @@ const ForgotPassword: React.FC = () => {
   };
 
   // 发送验证码
-  const sendCaptcha = async () => {
+  const sendCaptcha = async (sourceUserInfo = userInfo) => {
     setCaptchaLoading(true);
     try {
-      // 模拟发送验证码
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const target = resetMethod === 'phone' ? userInfo.phone : userInfo.email;
-      message.success(`验证码已发送至 ${target}`);
+      const target = resetMethod === 'phone' ? sourceUserInfo.phone : sourceUserInfo.email;
+      const result = await AuthService.sendCaptcha(target);
+      if (!result.success) {
+        message.error(result.message);
+        return;
+      }
+      message.success(result.message || `验证码已发送至 ${target}`);
       
       // 开始倒计时
       let count = 60;
@@ -107,9 +105,6 @@ const ForgotPassword: React.FC = () => {
   const handleVerifyCode = async () => {
     setLoading(true);
     try {
-      // 模拟验证码验证
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setCurrentStep(ResetSteps.RESET_PASSWORD);
       message.success('验证码验证成功');
     } catch (error) {
@@ -120,14 +115,17 @@ const ForgotPassword: React.FC = () => {
   };
 
   // 重置密码
-  const handleResetPassword = async () => {
+  const handleResetPassword = async (values: any) => {
     setLoading(true);
     try {
-      // 模拟重置密码
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await AuthService.resetPassword(userInfo.username, values.password);
+      if (!result.success) {
+        message.error(result.message);
+        return;
+      }
       
       setCurrentStep(ResetSteps.COMPLETE);
-      message.success('密码重置成功');
+      message.success(result.message || '密码重置成功');
     } catch (error) {
       message.error('密码重置失败，请重试');
     } finally {
@@ -296,7 +294,7 @@ const ForgotPassword: React.FC = () => {
 
             <Form.Item>
               <Button
-                onClick={sendCaptcha}
+                onClick={() => sendCaptcha()}
                 loading={captchaLoading}
                 disabled={countdown > 0}
                 block

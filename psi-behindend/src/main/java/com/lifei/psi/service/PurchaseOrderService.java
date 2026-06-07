@@ -57,6 +57,9 @@ public class PurchaseOrderService {
     public PurchaseOrder createOrder(PurchaseOrder order, List<PurchaseOrderItem> items) {
         // 生成订单号
         order.setOrderNo(generateOrderNo());
+        if (isBlank(order.getStatus())) {
+            order.setStatus("PENDING");
+        }
         order.setOrderDate(LocalDateTime.now());
         order.setCreatedTime(LocalDateTime.now());
         order.setUpdatedTime(LocalDateTime.now());
@@ -187,5 +190,9 @@ public class PurchaseOrderService {
             }
         }
         return total;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

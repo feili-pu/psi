@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Button,
@@ -30,6 +30,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { PurchaseRealApi, RealResourceUtils } from '../../services/realResourceService';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -50,105 +51,15 @@ const statusConfig = {
   [InquiryStatus.SENT]: { color: 'blue', text: '已发送', icon: <SendOutlined /> },
   [InquiryStatus.REPLIED]: { color: 'orange', text: '已回复', icon: <ExclamationCircleOutlined /> },
   [InquiryStatus.COMPLETED]: { color: 'green', text: '已完成', icon: <CheckCircleOutlined /> },
-  [InquiryStatus.CANCELLED]: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> }
+  [InquiryStatus.CANCELLED]: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> },
+  ACTIVE: { color: 'blue', text: '询价中', icon: <SendOutlined /> },
+  COMPLETED: { color: 'green', text: '已完成', icon: <CheckCircleOutlined /> },
+  CANCELLED: { color: 'red', text: '已取消', icon: <ClockCircleOutlined /> }
 };
 
-// 模拟采购询价数据
-const mockPurchaseInquiries = [
-  {
-    id: 1,
-    inquiryNo: 'PI202401001',
-    inquiryTitle: '办公设备采购询价',
-    department: '行政部',
-    inquirer: '张三',
-    inquiryDate: '2024-01-15',
-    deadline: '2024-01-25',
-    status: InquiryStatus.COMPLETED,
-    supplierCount: 5,
-    replyCount: 4,
-    items: [
-      { productName: '笔记本电脑', quantity: 10, specifications: 'i5处理器，8GB内存，256GB SSD' },
-      { productName: '打印机', quantity: 2, specifications: '激光打印机，A4幅面，双面打印' },
-      { productName: '办公椅', quantity: 15, specifications: '人体工学设计，可调节高度' }
-    ],
-    suppliers: [
-      { name: '深圳电子科技', contact: '王经理', phone: '13800138001', replied: true, replyDate: '2024-01-17' },
-      { name: '北京办公用品', contact: '刘总', phone: '13900139002', replied: true, replyDate: '2024-01-18' },
-      { name: '广州设备公司', contact: '陈主管', phone: '13700137003', replied: true, replyDate: '2024-01-19' },
-      { name: '上海科技设备', contact: '李经理', phone: '13600136004', replied: false, replyDate: null },
-      { name: '杭州办公家具', contact: '周总', phone: '13500135005', replied: true, replyDate: '2024-01-20' }
-    ],
-    remark: '请提供详细的技术参数和报价'
-  },
-  {
-    id: 2,
-    inquiryNo: 'PI202401002',
-    inquiryTitle: '生产原料采购询价',
-    department: '生产部',
-    inquirer: '王五',
-    inquiryDate: '2024-01-16',
-    deadline: '2024-01-28',
-    status: InquiryStatus.REPLIED,
-    supplierCount: 3,
-    replyCount: 2,
-    items: [
-      { productName: '钢材', quantity: 500, specifications: 'Q235钢材，厚度5mm' },
-      { productName: '螺丝', quantity: 1000, specifications: 'M6*20不锈钢螺丝' },
-      { productName: '包装材料', quantity: 200, specifications: '纸箱，规格40*30*20cm' }
-    ],
-    suppliers: [
-      { name: '钢铁集团', contact: '赵经理', phone: '13800138011', replied: true, replyDate: '2024-01-18' },
-      { name: '五金制品厂', contact: '钱总', phone: '13900139012', replied: true, replyDate: '2024-01-19' },
-      { name: '包装材料公司', contact: '孙主管', phone: '13700137013', replied: false, replyDate: null }
-    ],
-    remark: '急需，请尽快回复报价'
-  },
-  {
-    id: 3,
-    inquiryNo: 'PI202401003',
-    inquiryTitle: '实验室设备询价',
-    department: '研发部',
-    inquirer: '赵六',
-    inquiryDate: '2024-01-17',
-    deadline: '2024-02-05',
-    status: InquiryStatus.SENT,
-    supplierCount: 4,
-    replyCount: 0,
-    items: [
-      { productName: '测试仪器', quantity: 2, specifications: '精度0.01%，测量范围0-1000V' },
-      { productName: '实验台', quantity: 4, specifications: '不锈钢台面，带抽屉和储物柜' }
-    ],
-    suppliers: [
-      { name: '科学仪器公司', contact: '吴经理', phone: '13800138021', replied: false, replyDate: null },
-      { name: '实验设备厂', contact: '郑总', phone: '13900139022', replied: false, replyDate: null },
-      { name: '精密仪器公司', contact: '王主管', phone: '13700137023', replied: false, replyDate: null },
-      { name: '实验室家具厂', contact: '李经理', phone: '13600136024', replied: false, replyDate: null }
-    ],
-    remark: '设备需要符合行业标准，请提供相关认证'
-  },
-  {
-    id: 4,
-    inquiryNo: 'PI202401004',
-    inquiryTitle: '营销物料询价',
-    department: '市场部',
-    inquirer: '钱七',
-    inquiryDate: '2024-01-18',
-    deadline: '2024-01-30',
-    status: InquiryStatus.DRAFT,
-    supplierCount: 0,
-    replyCount: 0,
-    items: [
-      { productName: '宣传册', quantity: 5000, specifications: '铜版纸，彩色印刷，16页' },
-      { productName: '展示架', quantity: 20, specifications: '铝合金材质，可折叠' },
-      { productName: '礼品', quantity: 1000, specifications: '定制LOGO，包装精美' }
-    ],
-    suppliers: [],
-    remark: '即将参加展会，需要高质量的营销物料'
-  }
-];
-
 const PurchaseInquiry: React.FC = () => {
-  const [inquiries, setInquiries] = useState(mockPurchaseInquiries);
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -156,6 +67,34 @@ const PurchaseInquiry: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
   const [form] = Form.useForm();
+
+  const mapInquiry = (inquiry: any) => ({
+    ...inquiry,
+    inquiryTitle: inquiry.inquiryTitle || inquiry.title,
+    deadline: inquiry.deadline || inquiry.deadlineDate,
+    supplierCount: inquiry.supplierCount || 0,
+    replyCount: inquiry.replyCount || 0,
+    items: inquiry.items || [],
+    suppliers: inquiry.suppliers || [],
+    remark: inquiry.remark || inquiry.remarks
+  });
+
+  const loadInquiries = async () => {
+    setLoading(true);
+    try {
+      const data = await PurchaseRealApi.listInquiries();
+      setInquiries(data.map(mapInquiry));
+    } catch (error) {
+      message.error('加载采购询价失败: ' + (error as Error).message);
+      setInquiries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInquiries();
+  }, []);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -287,18 +226,31 @@ const PurchaseInquiry: React.FC = () => {
   ];
 
   // 处理查看详情
-  const handleViewDetail = (inquiryNo: string) => {
+  const handleViewDetail = async (inquiryNo: string) => {
     const inquiry = inquiries.find(i => i.inquiryNo === inquiryNo);
-    setSelectedInquiry(inquiry);
-    setDetailModalVisible(true);
+    if (!inquiry?.id) return;
+    try {
+      const detail = await PurchaseRealApi.getInquiry(inquiry.id);
+      setSelectedInquiry(mapInquiry({ ...detail.inquiry, items: detail.items }));
+      setDetailModalVisible(true);
+    } catch (error) {
+      message.error('获取采购询价详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理编辑
-  const handleEdit = (id: number) => {
+  const handleEdit = async (id: number) => {
     const inquiry = inquiries.find(i => i.id === id);
     setSelectedInquiry(inquiry);
-    form.setFieldsValue(inquiry);
-    setEditModalVisible(true);
+    try {
+      const detail = await PurchaseRealApi.getInquiry(id);
+      const normalized = mapInquiry({ ...detail.inquiry, items: detail.items });
+      setSelectedInquiry(normalized);
+      form.setFieldsValue(normalized);
+      setEditModalVisible(true);
+    } catch (error) {
+      message.error('获取采购询价详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理发送询价
@@ -306,11 +258,10 @@ const PurchaseInquiry: React.FC = () => {
     Modal.confirm({
       title: '发送询价',
       content: '确定要发送这个采购询价吗？发送后将通知所有供应商。',
-      onOk() {
-        setInquiries(inquiries.map(i => 
-          i.id === id ? { ...i, status: InquiryStatus.SENT } : i
-        ));
-        message.success('询价已发送给供应商');
+      async onOk() {
+        await PurchaseRealApi.completeInquiry(id);
+        message.success('询价已完成');
+        loadInquiries();
       },
     });
   };
@@ -320,9 +271,10 @@ const PurchaseInquiry: React.FC = () => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这个采购询价吗？',
-      onOk() {
-        setInquiries(inquiries.filter(i => i.id !== id));
+      async onOk() {
+        await PurchaseRealApi.deleteInquiry(id);
         message.success('删除成功');
+        loadInquiries();
       },
     });
   };
@@ -336,7 +288,7 @@ const PurchaseInquiry: React.FC = () => {
 
   // 处理导出
   const handleExport = () => {
-    message.info('导出采购询价数据');
+    RealResourceUtils.exportCsv('采购询价.csv', filteredInquiries);
   };
 
   // 处理保存
@@ -344,28 +296,14 @@ const PurchaseInquiry: React.FC = () => {
     try {
       const values = await form.validateFields();
       if (selectedInquiry) {
-        // 编辑询价
-        setInquiries(inquiries.map(i => 
-          i.id === selectedInquiry.id ? { ...i, ...values } : i
-        ));
+        await PurchaseRealApi.saveInquiry(values, selectedInquiry.id);
         message.success('询价更新成功');
       } else {
-        // 新建询价
-        const newInquiry = {
-          id: Math.max(...inquiries.map(i => i.id)) + 1,
-          inquiryNo: `PI${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-          ...values,
-          status: InquiryStatus.DRAFT,
-          inquiryDate: new Date().toISOString().split('T')[0],
-          supplierCount: 0,
-          replyCount: 0,
-          items: [],
-          suppliers: []
-        };
-        setInquiries([...inquiries, newInquiry]);
+        await PurchaseRealApi.saveInquiry(values);
         message.success('询价创建成功');
       }
       setEditModalVisible(false);
+      loadInquiries();
     } catch (error) {
       console.error('表单验证失败:', error);
     }
@@ -512,6 +450,7 @@ const PurchaseInquiry: React.FC = () => {
             onChange: setSelectedRowKeys,
           }}
           scroll={{ x: 1300 }}
+          loading={loading}
         />
       </Card>
 

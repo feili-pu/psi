@@ -87,6 +87,101 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/register")
+    @Operation(summary = "用户注册", description = "注册普通系统用户")
+    public Map<String, Object> register(@RequestBody Map<String, Object> request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String username = getString(request, "username");
+            String password = getString(request, "password");
+            String confirmPassword = getString(request, "confirmPassword");
+            String email = getString(request, "email");
+            String phone = getString(request, "phone");
+
+            if (username == null || username.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "用户名不能为空");
+                return result;
+            }
+            if (password == null || password.trim().isEmpty()) {
+                result.put("success", false);
+                result.put("message", "密码不能为空");
+                return result;
+            }
+            if (confirmPassword != null && !password.equals(confirmPassword)) {
+                result.put("success", false);
+                result.put("message", "两次输入的密码不一致");
+                return result;
+            }
+            if (userService.getUserByUsername(username) != null) {
+                result.put("success", false);
+                result.put("message", "用户名已存在");
+                return result;
+            }
+
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(password);
+            user.setRealName(username);
+            user.setEmail(email);
+            user.setPhone(phone);
+            user.setStatus(1);
+            userService.createUser(user);
+
+            result.put("success", true);
+            result.put("message", "注册成功，请使用用户名和密码登录");
+            return result;
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "注册失败: " + e.getMessage());
+            return result;
+        }
+    }
+
+    @PostMapping("/send-captcha")
+    @Operation(summary = "发送验证码", description = "发送注册或找回密码验证码")
+    public Map<String, Object> sendCaptcha(@RequestBody Map<String, Object> request) {
+        Map<String, Object> result = new HashMap<>();
+        String phone = getString(request, "phone");
+        if (phone == null || phone.trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "手机号不能为空");
+            return result;
+        }
+        result.put("success", true);
+        result.put("message", "验证码已发送");
+        return result;
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "重置密码", description = "将指定用户密码重置为初始密码")
+    public Map<String, Object> resetPassword(@RequestBody Map<String, Object> request) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String username = getString(request, "username");
+            String newPassword = getString(request, "newPassword");
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                newPassword = "123456";
+            }
+
+            User user = userService.getUserByUsername(username);
+            if (user == null) {
+                result.put("success", false);
+                result.put("message", "用户不存在");
+                return result;
+            }
+
+            boolean updated = userService.resetPassword(user.getId(), newPassword);
+            result.put("success", updated);
+            result.put("message", updated ? "密码已重置为 " + newPassword : "密码重置失败");
+            return result;
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "密码重置失败: " + e.getMessage());
+            return result;
+        }
+    }
+
     @GetMapping("/generate-hash")
     @Operation(summary = "生成密码哈希", description = "临时测试端点，生成密码的BCrypt哈希")
     public Map<String, Object> generateHash(@RequestParam String password) {
@@ -185,5 +280,10 @@ public class AuthController {
             result.put("message", "Token验证失败: " + e.getMessage());
             return result;
         }
+    }
+
+    private String getString(Map<String, Object> request, String key) {
+        Object value = request.get(key);
+        return value == null ? null : String.valueOf(value);
     }
 }

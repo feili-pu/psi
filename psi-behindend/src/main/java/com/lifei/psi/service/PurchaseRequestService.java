@@ -57,6 +57,9 @@ public class PurchaseRequestService {
     public PurchaseRequest createRequest(PurchaseRequest request, List<PurchaseRequestItem> items) {
         // 生成申请单号
         request.setRequestNo(generateRequestNo());
+        if (isBlank(request.getStatus())) {
+            request.setStatus("PENDING");
+        }
         request.setRequestDate(LocalDateTime.now());
         request.setCreatedTime(LocalDateTime.now());
         request.setUpdatedTime(LocalDateTime.now());
@@ -164,5 +167,9 @@ public class PurchaseRequestService {
             }
         }
         return total;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

@@ -24,7 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/statistics")
 @Tag(name = "销售统计管理", description = "销售相关的统计报表和分析")
-@RequirePermission("statistics:sales")
+@RequirePermission("sales:statistics:read")
 public class SalesStatisticsController {
 
     @Autowired

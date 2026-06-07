@@ -61,6 +61,9 @@ public class PurchaseInquiryService {
     public PurchaseInquiry createInquiry(PurchaseInquiry inquiry, List<PurchaseInquiryItem> items) {
         // 生成询价单号
         inquiry.setInquiryNo(generateInquiryNo());
+        if (isBlank(inquiry.getStatus())) {
+            inquiry.setStatus("ACTIVE");
+        }
         inquiry.setInquiryDate(LocalDateTime.now());
         inquiry.setCreatedTime(LocalDateTime.now());
         inquiry.setUpdatedTime(LocalDateTime.now());
@@ -136,5 +139,9 @@ public class PurchaseInquiryService {
     private String generateInquiryNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "PI" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

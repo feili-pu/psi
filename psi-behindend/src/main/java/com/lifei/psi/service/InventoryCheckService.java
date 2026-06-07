@@ -73,6 +73,9 @@ public class InventoryCheckService {
     public InventoryCheck createCheck(InventoryCheck check, List<InventoryCheckItem> items) {
         // 生成盘点单号
         check.setCheckNo(generateCheckNo());
+        if (isBlank(check.getStatus())) {
+            check.setStatus("PENDING");
+        }
         check.setCheckDate(LocalDateTime.now());
         check.setCreatedTime(LocalDateTime.now());
         check.setUpdatedTime(LocalDateTime.now());
@@ -123,6 +126,9 @@ public class InventoryCheckService {
     public InventoryCheck createCheckWithCurrentInventory(InventoryCheck check) {
         // 生成盘点单号
         check.setCheckNo(generateCheckNo());
+        if (isBlank(check.getStatus())) {
+            check.setStatus("PENDING");
+        }
         check.setCheckDate(LocalDateTime.now());
         check.setCreatedTime(LocalDateTime.now());
         check.setUpdatedTime(LocalDateTime.now());
@@ -285,5 +291,9 @@ public class InventoryCheckService {
     private String generateCheckNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "IC" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

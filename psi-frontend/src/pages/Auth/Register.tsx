@@ -26,6 +26,7 @@ import {
   CheckCircleOutlined,
   ArrowLeftOutlined
 } from '@ant-design/icons';
+import AuthService from '../../services/authService';
 
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
@@ -61,9 +62,12 @@ const Register: React.FC = () => {
     
     setCaptchaLoading(true);
     try {
-      // 模拟发送验证码
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success('验证码已发送');
+      const result = await AuthService.sendCaptcha(phone || email);
+      if (!result.success) {
+        message.error(result.message);
+        return;
+      }
+      message.success(result.message || '验证码已发送');
       
       // 开始倒计时
       let count = 60;
@@ -87,12 +91,10 @@ const Register: React.FC = () => {
   const handleBasicInfo = async (values: any) => {
     setLoading(true);
     try {
-      // 模拟验证用户信息
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setFormData({ ...formData, ...values });
       setCurrentStep(RegisterSteps.VERIFY);
       message.success('基本信息填写完成');
+      AuthService.sendCaptcha(values.phone || values.email);
     } catch (error) {
       message.error('信息验证失败');
     } finally {
@@ -104,9 +106,6 @@ const Register: React.FC = () => {
   const handleVerify = async (values: any) => {
     setLoading(true);
     try {
-      // 模拟验证码验证
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setFormData({ ...formData, ...values });
       setCurrentStep(RegisterSteps.COMPANY_INFO);
       message.success('验证通过');
@@ -121,14 +120,15 @@ const Register: React.FC = () => {
   const handleCompanyInfo = async (values: any) => {
     setLoading(true);
     try {
-      // 模拟注册
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       const finalData = { ...formData, ...values };
-      console.log('注册数据:', finalData);
+      const result = await AuthService.register(finalData);
+      if (!result.success) {
+        message.error(result.message);
+        return;
+      }
       
       setCurrentStep(RegisterSteps.COMPLETE);
-      message.success('注册成功！');
+      message.success(result.message || '注册成功！');
     } catch (error) {
       message.error('注册失败，请重试');
     } finally {

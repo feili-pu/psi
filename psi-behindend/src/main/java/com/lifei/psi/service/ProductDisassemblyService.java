@@ -61,6 +61,9 @@ public class ProductDisassemblyService {
     public ProductDisassembly createDisassembly(ProductDisassembly disassembly) {
         // 生成拆卸单号
         disassembly.setDisassemblyNo(generateDisassemblyNo());
+        if (isBlank(disassembly.getStatus())) {
+            disassembly.setStatus("PENDING");
+        }
         disassembly.setDisassemblyDate(LocalDateTime.now());
         disassembly.setCreatedTime(LocalDateTime.now());
         disassembly.setUpdatedTime(LocalDateTime.now());
@@ -168,5 +171,9 @@ public class ProductDisassemblyService {
     private String generateDisassemblyNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "PD" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

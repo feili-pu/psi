@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Button,
@@ -32,6 +32,7 @@ import {
   DollarCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { PurchaseRealApi, RealResourceUtils } from '../../services/realResourceService';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -52,125 +53,15 @@ const statusConfig = {
   [PayableStatus.PARTIAL]: { color: 'blue', text: '部分付款', icon: <ExclamationCircleOutlined /> },
   [PayableStatus.PAID]: { color: 'green', text: '已付款', icon: <CheckCircleOutlined /> },
   [PayableStatus.OVERDUE]: { color: 'red', text: '逾期', icon: <WarningOutlined /> },
-  [PayableStatus.CANCELLED]: { color: 'default', text: '已取消', icon: <ClockCircleOutlined /> }
+  [PayableStatus.CANCELLED]: { color: 'default', text: '已取消', icon: <ClockCircleOutlined /> },
+  UNPAID: { color: 'orange', text: '未付款', icon: <ClockCircleOutlined /> },
+  PARTIAL_PAID: { color: 'blue', text: '部分付款', icon: <ExclamationCircleOutlined /> },
+  PAID: { color: 'green', text: '已付款', icon: <CheckCircleOutlined /> }
 };
 
-// 模拟采购应付数据
-const mockPurchasePayables = [
-  {
-    id: 1,
-    payableNo: 'PP202401001',
-    purchaseOrderNo: 'PO202401001',
-    supplierName: '深圳电子科技有限公司',
-    supplierContact: '王经理',
-    supplierPhone: '13800138001',
-    invoiceNo: 'INV202401001',
-    invoiceDate: '2024-01-15',
-    dueDate: '2024-02-15',
-    totalAmount: 185600.00,
-    paidAmount: 185600.00,
-    unpaidAmount: 0.00,
-    status: PayableStatus.PAID,
-    paymentTerms: '货到付款',
-    department: '行政部',
-    purchaser: '张三',
-    accountant: '李会计',
-    paymentDate: '2024-01-16',
-    paymentMethod: '银行转账',
-    remark: '已按时付款完成'
-  },
-  {
-    id: 2,
-    payableNo: 'PP202401002',
-    purchaseOrderNo: 'PO202401002',
-    supplierName: '北京办公用品供应商',
-    supplierContact: '刘总',
-    supplierPhone: '13900139002',
-    invoiceNo: 'INV202401002',
-    invoiceDate: '2024-01-16',
-    dueDate: '2024-02-16',
-    totalAmount: 45800.00,
-    paidAmount: 20000.00,
-    unpaidAmount: 25800.00,
-    status: PayableStatus.PARTIAL,
-    paymentTerms: '30天账期',
-    department: '行政部',
-    purchaser: '张三',
-    accountant: '李会计',
-    paymentDate: '2024-01-18',
-    paymentMethod: '银行转账',
-    remark: '已付首期款项，余款待付'
-  },
-  {
-    id: 3,
-    payableNo: 'PP202401003',
-    purchaseOrderNo: 'PO202401003',
-    supplierName: '广州工业设备公司',
-    supplierContact: '陈主管',
-    supplierPhone: '13700137003',
-    invoiceNo: 'INV202401003',
-    invoiceDate: '2024-01-17',
-    dueDate: '2024-02-17',
-    totalAmount: 328000.00,
-    paidAmount: 0.00,
-    unpaidAmount: 328000.00,
-    status: PayableStatus.UNPAID,
-    paymentTerms: '预付30%，余款货到付清',
-    department: '生产部',
-    purchaser: '王五',
-    accountant: '李会计',
-    paymentDate: null,
-    paymentMethod: null,
-    remark: '等待设备到货后付款'
-  },
-  {
-    id: 4,
-    payableNo: 'PP202401004',
-    purchaseOrderNo: 'PO202401004',
-    supplierName: '上海化工材料有限公司',
-    supplierContact: '孙经理',
-    supplierPhone: '13600136004',
-    invoiceNo: 'INV202401004',
-    invoiceDate: '2024-01-10',
-    dueDate: '2024-01-25',
-    totalAmount: 67500.00,
-    paidAmount: 0.00,
-    unpaidAmount: 67500.00,
-    status: PayableStatus.OVERDUE,
-    paymentTerms: '现金交易',
-    department: '生产部',
-    purchaser: '王五',
-    accountant: '李会计',
-    paymentDate: null,
-    paymentMethod: null,
-    remark: '已逾期，需要尽快处理'
-  },
-  {
-    id: 5,
-    payableNo: 'PP202401005',
-    purchaseOrderNo: 'PO202401005',
-    supplierName: '杭州科技设备厂',
-    supplierContact: '周总',
-    supplierPhone: '13500135005',
-    invoiceNo: 'INV202401005',
-    invoiceDate: '2024-01-18',
-    dueDate: '2024-02-18',
-    totalAmount: 156000.00,
-    paidAmount: 0.00,
-    unpaidAmount: 156000.00,
-    status: PayableStatus.CANCELLED,
-    paymentTerms: '全款预付',
-    department: '研发部',
-    purchaser: '赵六',
-    accountant: '李会计',
-    paymentDate: null,
-    paymentMethod: null,
-    remark: '订单已取消，无需付款'
-  }
-];
-
 const PurchasePayable: React.FC = () => {
-  const [payables, setPayables] = useState(mockPurchasePayables);
+  const [payables, setPayables] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -178,6 +69,35 @@ const PurchasePayable: React.FC = () => {
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [selectedPayable, setSelectedPayable] = useState<any>(null);
   const [form] = Form.useForm();
+
+  const mapPayable = (payable: any) => ({
+    ...payable,
+    supplierName: payable.supplierName || `供应商#${payable.supplierId || '-'}`,
+    purchaseOrderNo: payable.purchaseOrderNo || (payable.purchaseOrderId ? `PO#${payable.purchaseOrderId}` : '-'),
+    invoiceNo: payable.invoiceNo || '-',
+    invoiceDate: payable.invoiceDate || payable.createdTime,
+    totalAmount: payable.totalAmount || 0,
+    paidAmount: payable.paidAmount || 0,
+    unpaidAmount: payable.unpaidAmount || 0,
+    remark: payable.remark || payable.remarks
+  });
+
+  const loadPayables = async () => {
+    setLoading(true);
+    try {
+      const data = await PurchaseRealApi.listPayables();
+      setPayables(data.map(mapPayable));
+    } catch (error) {
+      message.error('加载采购应付失败: ' + (error as Error).message);
+      setPayables([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPayables();
+  }, []);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -223,7 +143,7 @@ const PurchasePayable: React.FC = () => {
       key: 'dueDate',
       width: 110,
       render: (date: string, record) => {
-        const isOverdue = new Date(date) < new Date() && record.status !== PayableStatus.PAID;
+        const isOverdue = new Date(date) < new Date() && record.status !== PayableStatus.PAID && record.status !== 'PAID';
         return (
           <span style={{ color: isOverdue ? '#f5222d' : '#666' }}>
             {date}
@@ -285,7 +205,7 @@ const PurchasePayable: React.FC = () => {
       key: 'status',
       width: 100,
       render: (status: string) => {
-        const config = statusConfig[status];
+        const config = statusConfig[status] || statusConfig.UNPAID;
         return (
           <Tag color={config.color} icon={config.icon}>
             {config.text}
@@ -307,7 +227,7 @@ const PurchasePayable: React.FC = () => {
           >
             查看
           </Button>
-          {(record.status === PayableStatus.UNPAID || record.status === PayableStatus.PARTIAL || record.status === PayableStatus.OVERDUE) && (
+          {(record.status === PayableStatus.UNPAID || record.status === PayableStatus.PARTIAL || record.status === PayableStatus.OVERDUE || record.status === 'UNPAID' || record.status === 'PARTIAL_PAID') && (
             <Button
               type="text"
               icon={<DollarCircleOutlined />}
@@ -323,7 +243,7 @@ const PurchasePayable: React.FC = () => {
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record.id)}
-            disabled={record.status === PayableStatus.PAID || record.status === PayableStatus.CANCELLED}
+            disabled={record.status === PayableStatus.PAID || record.status === PayableStatus.CANCELLED || record.status === 'PAID'}
           >
             编辑
           </Button>
@@ -355,12 +275,15 @@ const PurchasePayable: React.FC = () => {
   const handleEdit = (id: number) => {
     const payable = payables.find(p => p.id === id);
     setSelectedPayable(payable);
-    message.info('编辑应付账款功能');
+    if (payable) {
+      form.setFieldsValue(payable);
+      setPaymentModalVisible(true);
+    }
   };
 
   // 处理导出
   const handleExport = () => {
-    message.info('导出采购应付数据');
+    RealResourceUtils.exportCsv('采购应付.csv', filteredPayables);
   };
 
   // 处理付款保存
@@ -370,29 +293,10 @@ const PurchasePayable: React.FC = () => {
       const paymentAmount = values.paymentAmount;
       
       if (selectedPayable) {
-        const newPaidAmount = selectedPayable.paidAmount + paymentAmount;
-        const newUnpaidAmount = selectedPayable.totalAmount - newPaidAmount;
-        
-        let newStatus = PayableStatus.PARTIAL;
-        if (newUnpaidAmount <= 0) {
-          newStatus = PayableStatus.PAID;
-        } else if (newPaidAmount === 0) {
-          newStatus = PayableStatus.UNPAID;
-        }
-        
-        setPayables(payables.map(p => 
-          p.id === selectedPayable.id ? { 
-            ...p, 
-            paidAmount: newPaidAmount,
-            unpaidAmount: Math.max(0, newUnpaidAmount),
-            status: newStatus,
-            paymentDate: values.paymentDate,
-            paymentMethod: values.paymentMethod
-          } : p
-        ));
-        
+        await PurchaseRealApi.processPayment(selectedPayable.id, paymentAmount);
         message.success(`付款成功，付款金额：¥${paymentAmount.toLocaleString()}`);
         setPaymentModalVisible(false);
+        loadPayables();
       }
     } catch (error) {
       console.error('付款失败:', error);
@@ -413,8 +317,8 @@ const PurchasePayable: React.FC = () => {
   // 统计数据
   const statistics = {
     total: payables.length,
-    unpaid: payables.filter(p => p.status === PayableStatus.UNPAID).length,
-    partial: payables.filter(p => p.status === PayableStatus.PARTIAL).length,
+    unpaid: payables.filter(p => p.status === PayableStatus.UNPAID || p.status === 'UNPAID').length,
+    partial: payables.filter(p => p.status === PayableStatus.PARTIAL || p.status === 'PARTIAL_PAID').length,
     overdue: payables.filter(p => p.status === PayableStatus.OVERDUE).length,
     totalAmount: payables.reduce((sum, payable) => sum + payable.totalAmount, 0),
     paidAmount: payables.reduce((sum, payable) => sum + payable.paidAmount, 0),
@@ -548,6 +452,7 @@ const PurchasePayable: React.FC = () => {
             onChange: setSelectedRowKeys,
           }}
           scroll={{ x: 1600 }}
+          loading={loading}
         />
       </Card>
 
@@ -629,8 +534,8 @@ const PurchasePayable: React.FC = () => {
             </div>
             
             <div style={{ textAlign: 'center' }}>
-              <Tag color={statusConfig[selectedPayable.status].color} icon={statusConfig[selectedPayable.status].icon}>
-                {statusConfig[selectedPayable.status].text}
+              <Tag color={(statusConfig[selectedPayable.status] || statusConfig.UNPAID).color} icon={(statusConfig[selectedPayable.status] || statusConfig.UNPAID).icon}>
+                {(statusConfig[selectedPayable.status] || statusConfig.UNPAID).text}
               </Tag>
             </div>
             

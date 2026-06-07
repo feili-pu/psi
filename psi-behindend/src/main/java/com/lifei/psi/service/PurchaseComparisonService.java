@@ -77,6 +77,9 @@ public class PurchaseComparisonService {
     public PurchaseComparison createComparison(PurchaseComparison comparison) {
         // 生成比价单号
         comparison.setComparisonNo(generateComparisonNo());
+        if (isBlank(comparison.getStatus())) {
+            comparison.setStatus("PENDING");
+        }
         comparison.setComparisonDate(LocalDateTime.now());
         comparison.setCreatedTime(LocalDateTime.now());
         comparison.setUpdatedTime(LocalDateTime.now());
@@ -150,5 +153,9 @@ public class PurchaseComparisonService {
     private String generateComparisonNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "PC" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

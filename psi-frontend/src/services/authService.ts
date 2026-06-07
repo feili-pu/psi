@@ -80,20 +80,16 @@ export class AuthService {
     }
   }
 
-  // 用户注册（目前为模拟实现）
+  // 用户注册
   static async register(registerData: RegisterRequest): Promise<{ success: boolean; message: string }> {
     try {
-      // 模拟注册API调用
-      console.log('注册请求:', { ...registerData, password: '[PROTECTED]', confirmPassword: '[PROTECTED]' });
-      
-      // 模拟网络延迟
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 模拟注册成功
-      return {
-        success: true,
-        message: '注册成功，请使用用户名和密码登录'
-      };
+      const response = await fetch(`${this.baseUrl}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData)
+      });
+
+      return await response.json();
     } catch (error) {
       console.error('注册请求失败:', error);
       return {
@@ -241,18 +237,16 @@ export class AuthService {
     };
   }
 
-  // 发送验证码（模拟实现）
-  static async sendCaptcha(phone: string): Promise<{ success: boolean; message: string }> {
+  // 发送验证码
+  static async sendCaptcha(target: string): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('发送验证码到:', phone);
-      
-      // 模拟发送验证码
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return {
-        success: true,
-        message: '验证码已发送，请注意查收'
-      };
+      const response = await fetch(`${this.baseUrl}/send-captcha`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: target, email: target })
+      });
+
+      return await response.json();
     } catch (error) {
       console.error('发送验证码失败:', error);
       return {
@@ -262,18 +256,16 @@ export class AuthService {
     }
   }
 
-  // 重置密码（模拟实现）
-  static async resetPassword(username: string): Promise<{ success: boolean; message: string }> {
+  // 重置密码
+  static async resetPassword(username: string, newPassword?: string): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('重置密码请求:', username);
-      
-      // 模拟重置密码
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      return {
-        success: true,
-        message: '密码重置邮件已发送，请查收邮箱'
-      };
+      const response = await fetch(`${this.baseUrl}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, newPassword })
+      });
+
+      return await response.json();
     } catch (error) {
       console.error('重置密码失败:', error);
       return {

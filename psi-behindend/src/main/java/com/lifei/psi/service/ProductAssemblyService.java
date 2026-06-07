@@ -61,6 +61,9 @@ public class ProductAssemblyService {
     public ProductAssembly createAssembly(ProductAssembly assembly) {
         // 生成组装单号
         assembly.setAssemblyNo(generateAssemblyNo());
+        if (isBlank(assembly.getStatus())) {
+            assembly.setStatus("PENDING");
+        }
         assembly.setAssemblyDate(LocalDateTime.now());
         assembly.setCreatedTime(LocalDateTime.now());
         assembly.setUpdatedTime(LocalDateTime.now());
@@ -183,5 +186,9 @@ public class ProductAssemblyService {
     private String generateAssemblyNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "PA" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

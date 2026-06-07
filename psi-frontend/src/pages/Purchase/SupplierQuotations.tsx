@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Button,
@@ -31,6 +31,7 @@ import {
   PhoneOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { PurchaseRealApi, RealResourceUtils } from '../../services/realResourceService';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -51,132 +52,15 @@ const statusConfig = {
   [QuotationStatus.EVALUATING]: { color: 'orange', text: '评估中', icon: <ExclamationCircleOutlined /> },
   [QuotationStatus.ACCEPTED]: { color: 'green', text: '已接受', icon: <CheckCircleOutlined /> },
   [QuotationStatus.REJECTED]: { color: 'red', text: '已拒绝', icon: <ExclamationCircleOutlined /> },
-  [QuotationStatus.EXPIRED]: { color: 'default', text: '已过期', icon: <ClockCircleOutlined /> }
+  [QuotationStatus.EXPIRED]: { color: 'default', text: '已过期', icon: <ClockCircleOutlined /> },
+  SUBMITTED: { color: 'blue', text: '已提交', icon: <ClockCircleOutlined /> },
+  SELECTED: { color: 'green', text: '已选中', icon: <CheckCircleOutlined /> },
+  REJECTED: { color: 'red', text: '已拒绝', icon: <ExclamationCircleOutlined /> }
 };
 
-// 模拟供应商报价数据
-const mockSupplierQuotations = [
-  {
-    id: 1,
-    quotationNo: 'SQ202401001',
-    supplierName: '深圳电子科技有限公司',
-    supplierContact: '王经理',
-    supplierPhone: '13800138001',
-    supplierEmail: 'wang@sztech.com',
-    supplierRating: 4.5,
-    quotationDate: '2024-01-15',
-    validUntil: '2024-02-15',
-    totalAmount: 185600.00,
-    status: QuotationStatus.ACCEPTED,
-    items: [
-      { productName: 'CPU处理器', quantity: 50, unitPrice: 2800, amount: 140000, deliveryDays: 7 },
-      { productName: '内存条8GB', quantity: 100, unitPrice: 320, amount: 32000, deliveryDays: 5 },
-      { productName: '固态硬盘', quantity: 80, unitPrice: 168, amount: 13440, deliveryDays: 3 }
-    ],
-    paymentTerms: '货到付款',
-    deliveryTerms: '送货上门',
-    warranty: '1年质保',
-    remark: '批量采购可享受额外折扣',
-    evaluator: '李采购',
-    evaluateDate: '2024-01-17'
-  },
-  {
-    id: 2,
-    quotationNo: 'SQ202401002',
-    supplierName: '北京办公用品供应商',
-    supplierContact: '刘总',
-    supplierPhone: '13900139002',
-    supplierEmail: 'liu@bjoffice.com',
-    supplierRating: 4.2,
-    quotationDate: '2024-01-16',
-    validUntil: '2024-02-16',
-    totalAmount: 45800.00,
-    status: QuotationStatus.EVALUATING,
-    items: [
-      { productName: '办公桌', quantity: 20, unitPrice: 1800, amount: 36000, deliveryDays: 10 },
-      { productName: '办公椅', quantity: 25, unitPrice: 280, amount: 7000, deliveryDays: 10 },
-      { productName: '文件柜', quantity: 10, unitPrice: 280, amount: 2800, deliveryDays: 15 }
-    ],
-    paymentTerms: '30天账期',
-    deliveryTerms: '免费送货安装',
-    warranty: '2年质保',
-    remark: '提供免费安装服务',
-    evaluator: '张采购',
-    evaluateDate: null
-  },
-  {
-    id: 3,
-    quotationNo: 'SQ202401003',
-    supplierName: '广州工业设备公司',
-    supplierContact: '陈主管',
-    supplierPhone: '13700137003',
-    supplierEmail: 'chen@gzequip.com',
-    supplierRating: 4.8,
-    quotationDate: '2024-01-17',
-    validUntil: '2024-02-17',
-    totalAmount: 328000.00,
-    status: QuotationStatus.RECEIVED,
-    items: [
-      { productName: '生产设备A', quantity: 2, unitPrice: 150000, amount: 300000, deliveryDays: 30 },
-      { productName: '配套工具', quantity: 1, unitPrice: 28000, amount: 28000, deliveryDays: 15 }
-    ],
-    paymentTerms: '预付30%，余款货到付清',
-    deliveryTerms: '专业运输，现场安装调试',
-    warranty: '3年质保，终身维护',
-    remark: '设备需要专业安装调试',
-    evaluator: null,
-    evaluateDate: null
-  },
-  {
-    id: 4,
-    quotationNo: 'SQ202401004',
-    supplierName: '上海化工材料有限公司',
-    supplierContact: '孙经理',
-    supplierPhone: '13600136004',
-    supplierEmail: 'sun@shchem.com',
-    supplierRating: 3.8,
-    quotationDate: '2024-01-10',
-    validUntil: '2024-01-25',
-    totalAmount: 67500.00,
-    status: QuotationStatus.EXPIRED,
-    items: [
-      { productName: '化工原料A', quantity: 500, unitPrice: 120, amount: 60000, deliveryDays: 7 },
-      { productName: '包装材料', quantity: 1000, unitPrice: 7.5, amount: 7500, deliveryDays: 5 }
-    ],
-    paymentTerms: '现金交易',
-    deliveryTerms: '客户自提',
-    warranty: '无质保',
-    remark: '价格已过期，需重新报价',
-    evaluator: null,
-    evaluateDate: null
-  },
-  {
-    id: 5,
-    quotationNo: 'SQ202401005',
-    supplierName: '杭州科技设备厂',
-    supplierContact: '周总',
-    supplierPhone: '13500135005',
-    supplierEmail: 'zhou@hztech.com',
-    supplierRating: 4.0,
-    quotationDate: '2024-01-18',
-    validUntil: '2024-02-18',
-    totalAmount: 156000.00,
-    status: QuotationStatus.REJECTED,
-    items: [
-      { productName: '测试设备', quantity: 3, unitPrice: 45000, amount: 135000, deliveryDays: 20 },
-      { productName: '配件包', quantity: 1, unitPrice: 21000, amount: 21000, deliveryDays: 10 }
-    ],
-    paymentTerms: '全款预付',
-    deliveryTerms: '物流配送',
-    warranty: '1年质保',
-    remark: '价格偏高，已拒绝',
-    evaluator: '王采购',
-    evaluateDate: '2024-01-19'
-  }
-];
-
 const SupplierQuotations: React.FC = () => {
-  const [quotations, setQuotations] = useState<any[]>(mockSupplierQuotations);
+  const [quotations, setQuotations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -184,6 +68,32 @@ const SupplierQuotations: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
   const [form] = Form.useForm();
+
+  const mapQuotation = (quotation: any) => ({
+    ...quotation,
+    supplierPhone: quotation.supplierPhone || quotation.supplierContact,
+    supplierEmail: quotation.supplierEmail || '-',
+    supplierRating: quotation.supplierRating || 3,
+    evaluator: quotation.evaluator || '-',
+    items: quotation.items || []
+  });
+
+  const loadQuotations = async () => {
+    setLoading(true);
+    try {
+      const data = await PurchaseRealApi.listSupplierQuotations();
+      setQuotations(data.map(mapQuotation));
+    } catch (error) {
+      message.error('加载供应商报价失败: ' + (error as Error).message);
+      setQuotations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQuotations();
+  }, []);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -329,18 +239,31 @@ const SupplierQuotations: React.FC = () => {
   ];
 
   // 处理查看详情
-  const handleViewDetail = (quotationNo: string) => {
+  const handleViewDetail = async (quotationNo: string) => {
     const quotation = quotations.find(q => q.quotationNo === quotationNo);
-    setSelectedQuotation(quotation);
-    setDetailModalVisible(true);
+    if (!quotation?.id) return;
+    try {
+      const detail = await PurchaseRealApi.getSupplierQuotation(quotation.id);
+      setSelectedQuotation(mapQuotation({ ...detail.quotation, items: detail.items }));
+      setDetailModalVisible(true);
+    } catch (error) {
+      message.error('获取供应商报价详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理编辑评估
-  const handleEdit = (id: number) => {
+  const handleEdit = async (id: number) => {
     const quotation = quotations.find(q => q.id === id);
     setSelectedQuotation(quotation);
-    form.setFieldsValue(quotation);
-    setEditModalVisible(true);
+    try {
+      const detail = await PurchaseRealApi.getSupplierQuotation(id);
+      const normalized = mapQuotation({ ...detail.quotation, items: detail.items });
+      setSelectedQuotation(normalized);
+      form.setFieldsValue(normalized);
+      setEditModalVisible(true);
+    } catch (error) {
+      message.error('获取供应商报价详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理接受报价
@@ -348,15 +271,10 @@ const SupplierQuotations: React.FC = () => {
     Modal.confirm({
       title: '接受报价',
       content: '确定要接受这个供应商报价吗？',
-      onOk() {
-        setQuotations(quotations.map(q => 
-          q.id === id ? { 
-            ...q, 
-            status: QuotationStatus.ACCEPTED,
-            evaluateDate: new Date().toISOString().split('T')[0]
-          } : q
-        ));
+      async onOk() {
+        await PurchaseRealApi.selectSupplierQuotation(id);
         message.success('报价已接受');
+        loadQuotations();
       },
     });
   };
@@ -366,15 +284,10 @@ const SupplierQuotations: React.FC = () => {
     Modal.confirm({
       title: '拒绝报价',
       content: '确定要拒绝这个供应商报价吗？',
-      onOk() {
-        setQuotations(quotations.map(q => 
-          q.id === id ? { 
-            ...q, 
-            status: QuotationStatus.REJECTED,
-            evaluateDate: new Date().toISOString().split('T')[0]
-          } : q
-        ));
+      async onOk() {
+        await PurchaseRealApi.rejectSupplierQuotation(id);
         message.success('报价已拒绝');
+        loadQuotations();
       },
     });
   };
@@ -388,7 +301,7 @@ const SupplierQuotations: React.FC = () => {
 
   // 处理导出
   const handleExport = () => {
-    message.info('导出供应商报价数据');
+    RealResourceUtils.exportCsv('供应商报价.csv', filteredQuotations);
   };
 
   // 处理保存评估
@@ -396,31 +309,14 @@ const SupplierQuotations: React.FC = () => {
     try {
       const values = await form.validateFields();
       if (selectedQuotation) {
-        // 更新评估
-        setQuotations(quotations.map(q => 
-          q.id === selectedQuotation.id ? { 
-            ...q, 
-            ...values,
-            status: QuotationStatus.EVALUATING,
-            evaluateDate: new Date().toISOString().split('T')[0]
-          } : q
-        ));
+        await PurchaseRealApi.saveSupplierQuotation(values, selectedQuotation.id);
         message.success('评估更新成功');
       } else {
-        // 新建报价记录
-        const newQuotation = {
-          id: Math.max(...quotations.map(q => q.id)) + 1,
-          quotationNo: `SQ${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-          ...values,
-          status: QuotationStatus.RECEIVED,
-          quotationDate: new Date().toISOString().split('T')[0],
-          evaluateDate: null,
-          items: []
-        };
-        setQuotations([...quotations, newQuotation]);
+        await PurchaseRealApi.saveSupplierQuotation(values);
         message.success('报价记录创建成功');
       }
       setEditModalVisible(false);
+      loadQuotations();
     } catch (error) {
       console.error('表单验证失败:', error);
     }
@@ -570,6 +466,7 @@ const SupplierQuotations: React.FC = () => {
             onChange: setSelectedRowKeys,
           }}
           scroll={{ x: 1400 }}
+          loading={loading}
         />
       </Card>
 

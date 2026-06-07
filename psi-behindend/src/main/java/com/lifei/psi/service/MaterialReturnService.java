@@ -65,6 +65,9 @@ public class MaterialReturnService {
     public MaterialReturn createReturn(MaterialReturn materialReturn, List<MaterialReturnItem> items) {
         // 生成退料单号
         materialReturn.setReturnNo(generateReturnNo());
+        if (isBlank(materialReturn.getStatus())) {
+            materialReturn.setStatus("PENDING");
+        }
         materialReturn.setReturnDate(LocalDateTime.now());
         materialReturn.setCreatedTime(LocalDateTime.now());
         materialReturn.setUpdatedTime(LocalDateTime.now());
@@ -171,5 +174,9 @@ public class MaterialReturnService {
     private String generateReturnNo() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         return "MRT" + dateStr + String.format("%04d", System.currentTimeMillis() % 10000);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Button,
@@ -31,6 +31,7 @@ import {
   SendOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { PurchaseRealApi, RealResourceUtils } from '../../services/realResourceService';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -51,7 +52,11 @@ const statusConfig = {
   [RequestStatus.SUBMITTED]: { color: 'blue', text: '已提交', icon: <SendOutlined /> },
   [RequestStatus.APPROVED]: { color: 'green', text: '已批准', icon: <CheckCircleOutlined /> },
   [RequestStatus.REJECTED]: { color: 'red', text: '已拒绝', icon: <ExclamationCircleOutlined /> },
-  [RequestStatus.CANCELLED]: { color: 'orange', text: '已取消', icon: <ClockCircleOutlined /> }
+  [RequestStatus.CANCELLED]: { color: 'orange', text: '已取消', icon: <ClockCircleOutlined /> },
+  PENDING: { color: 'blue', text: '待审批', icon: <SendOutlined /> },
+  APPROVED: { color: 'green', text: '已批准', icon: <CheckCircleOutlined /> },
+  REJECTED: { color: 'red', text: '已拒绝', icon: <ExclamationCircleOutlined /> },
+  CANCELLED: { color: 'orange', text: '已取消', icon: <ClockCircleOutlined /> }
 };
 
 // 紧急程度配置
@@ -61,95 +66,9 @@ const urgencyConfig: Record<string, { color: string; text: string }> = {
   high: { color: 'red', text: '特急' }
 };
 
-// 模拟采购申请数据
-const mockPurchaseRequests = [
-  {
-    id: 1,
-    requestNo: 'PR202401001',
-    requestTitle: '办公设备采购申请',
-    department: '行政部',
-    requester: '张三',
-    requestDate: '2024-01-15',
-    expectedDate: '2024-01-25',
-    totalAmount: 125680.00,
-    status: RequestStatus.APPROVED,
-    urgency: 'medium',
-    approver: '李经理',
-    approveDate: '2024-01-16',
-    items: [
-      { productName: '笔记本电脑', quantity: 10, estimatedPrice: 8500, amount: 85000, purpose: '员工办公使用' },
-      { productName: '打印机', quantity: 2, estimatedPrice: 15000, amount: 30000, purpose: '部门打印需求' },
-      { productName: '办公椅', quantity: 15, estimatedPrice: 780, amount: 11700, purpose: '新员工座椅' }
-    ],
-    reason: '部门扩编，需要增加办公设备',
-    remark: '请优先考虑性价比高的产品'
-  },
-  {
-    id: 2,
-    requestNo: 'PR202401002',
-    requestTitle: '生产原料采购申请',
-    department: '生产部',
-    requester: '王五',
-    requestDate: '2024-01-16',
-    expectedDate: '2024-01-28',
-    totalAmount: 89500.00,
-    status: RequestStatus.SUBMITTED,
-    urgency: 'high',
-    approver: null,
-    approveDate: null,
-    items: [
-      { productName: '钢材', quantity: 500, estimatedPrice: 150, amount: 75000, purpose: '产品生产' },
-      { productName: '螺丝', quantity: 1000, estimatedPrice: 12, amount: 12000, purpose: '产品组装' },
-      { productName: '包装材料', quantity: 200, estimatedPrice: 12.5, amount: 2500, purpose: '产品包装' }
-    ],
-    reason: '库存不足，急需补充生产原料',
-    remark: '生产急需，请加急处理'
-  },
-  {
-    id: 3,
-    requestNo: 'PR202401003',
-    requestTitle: '实验室设备采购申请',
-    department: '研发部',
-    requester: '赵六',
-    requestDate: '2024-01-17',
-    expectedDate: '2024-02-05',
-    totalAmount: 256800.00,
-    status: RequestStatus.DRAFT,
-    urgency: 'low',
-    approver: null,
-    approveDate: null,
-    items: [
-      { productName: '测试仪器', quantity: 2, estimatedPrice: 120000, amount: 240000, purpose: '产品测试' },
-      { productName: '实验台', quantity: 4, estimatedPrice: 4200, amount: 16800, purpose: '实验操作' }
-    ],
-    reason: '新项目启动，需要专业测试设备',
-    remark: '设备需要符合行业标准'
-  },
-  {
-    id: 4,
-    requestNo: 'PR202401004',
-    requestTitle: '营销物料采购申请',
-    department: '市场部',
-    requester: '钱七',
-    requestDate: '2024-01-18',
-    expectedDate: '2024-01-30',
-    totalAmount: 45200.00,
-    status: RequestStatus.REJECTED,
-    urgency: 'medium',
-    approver: '张总',
-    approveDate: '2024-01-19',
-    items: [
-      { productName: '宣传册', quantity: 5000, estimatedPrice: 5, amount: 25000, purpose: '产品宣传' },
-      { productName: '展示架', quantity: 20, estimatedPrice: 850, amount: 17000, purpose: '展会使用' },
-      { productName: '礼品', quantity: 1000, estimatedPrice: 3.2, amount: 3200, purpose: '客户赠送' }
-    ],
-    reason: '即将参加行业展会，需要营销物料',
-    remark: '预算超标，建议重新评估'
-  }
-];
-
 const PurchaseRequests: React.FC = () => {
-  const [requests, setRequests] = useState(mockPurchaseRequests);
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -158,6 +77,35 @@ const PurchaseRequests: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [form] = Form.useForm();
+
+  const mapRequest = (request: any) => ({
+    ...request,
+    requestTitle: request.requestTitle || request.remarks || `${request.department || ''}采购申请`,
+    requester: request.requester || request.applicant,
+    expectedDate: request.expectedDate || request.requiredDate,
+    urgency: request.urgency || 'medium',
+    reason: request.reason || request.remarks || '-',
+    remark: request.remark || request.remarks,
+    totalAmount: request.totalAmount || 0,
+    items: request.items || []
+  });
+
+  const loadRequests = async () => {
+    setLoading(true);
+    try {
+      const data = await PurchaseRealApi.listRequests();
+      setRequests(data.map(mapRequest));
+    } catch (error) {
+      message.error('加载采购申请失败: ' + (error as Error).message);
+      setRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -287,18 +235,31 @@ const PurchaseRequests: React.FC = () => {
   ];
 
   // 处理查看详情
-  const handleViewDetail = (requestNo: string) => {
+  const handleViewDetail = async (requestNo: string) => {
     const request = requests.find(r => r.requestNo === requestNo);
-    setSelectedRequest(request);
-    setDetailModalVisible(true);
+    if (!request?.id) return;
+    try {
+      const detail = await PurchaseRealApi.getRequest(request.id);
+      setSelectedRequest(mapRequest({ ...detail.request, items: detail.items }));
+      setDetailModalVisible(true);
+    } catch (error) {
+      message.error('获取采购申请详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理编辑
-  const handleEdit = (id: number) => {
+  const handleEdit = async (id: number) => {
     const request = requests.find(r => r.id === id);
     setSelectedRequest(request);
-    form.setFieldsValue(request);
-    setEditModalVisible(true);
+    try {
+      const detail = await PurchaseRealApi.getRequest(id);
+      const normalized = mapRequest({ ...detail.request, items: detail.items });
+      setSelectedRequest(normalized);
+      form.setFieldsValue(normalized);
+      setEditModalVisible(true);
+    } catch (error) {
+      message.error('获取采购申请详情失败: ' + (error as Error).message);
+    }
   };
 
   // 处理提交申请
@@ -306,11 +267,10 @@ const PurchaseRequests: React.FC = () => {
     Modal.confirm({
       title: '提交申请',
       content: '确定要提交这个采购申请吗？提交后将无法修改。',
-      onOk() {
-        setRequests(requests.map(r => 
-          r.id === id ? { ...r, status: RequestStatus.SUBMITTED } : r
-        ));
-        message.success('申请已提交，等待审批');
+      async onOk() {
+        await PurchaseRealApi.approveRequest(id);
+        message.success('申请已审批');
+        loadRequests();
       },
     });
   };
@@ -320,9 +280,10 @@ const PurchaseRequests: React.FC = () => {
     Modal.confirm({
       title: '确认删除',
       content: '确定要删除这个采购申请吗？',
-      onOk() {
-        setRequests(requests.filter(r => r.id !== id));
+      async onOk() {
+        await PurchaseRealApi.deleteRequest(id);
         message.success('删除成功');
+        loadRequests();
       },
     });
   };
@@ -336,7 +297,7 @@ const PurchaseRequests: React.FC = () => {
 
   // 处理导出
   const handleExport = () => {
-    message.info('导出采购申请数据');
+    RealResourceUtils.exportCsv('采购申请.csv', filteredRequests);
   };
 
   // 处理保存
@@ -344,27 +305,14 @@ const PurchaseRequests: React.FC = () => {
     try {
       const values = await form.validateFields();
       if (selectedRequest) {
-        // 编辑申请
-        setRequests(requests.map(r => 
-          r.id === selectedRequest.id ? { ...r, ...values } : r
-        ));
+        await PurchaseRealApi.saveRequest(values, selectedRequest.id);
         message.success('申请更新成功');
       } else {
-        // 新建申请
-        const newRequest = {
-          id: Math.max(...requests.map(r => r.id)) + 1,
-          requestNo: `PR${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-          ...values,
-          status: RequestStatus.DRAFT,
-          requestDate: new Date().toISOString().split('T')[0],
-          approver: null,
-          approveDate: null,
-          items: []
-        };
-        setRequests([...requests, newRequest]);
+        await PurchaseRealApi.saveRequest(values);
         message.success('申请创建成功');
       }
       setEditModalVisible(false);
+      loadRequests();
     } catch (error) {
       console.error('表单验证失败:', error);
     }
@@ -528,6 +476,7 @@ const PurchaseRequests: React.FC = () => {
             onChange: setSelectedRowKeys,
           }}
           scroll={{ x: 1400 }}
+          loading={loading}
         />
       </Card>
 
