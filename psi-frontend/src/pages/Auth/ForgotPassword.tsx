@@ -441,20 +441,12 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
+    <div className="auth-shell auth-flow-shell">
       <Card
+        className="auth-flow-card"
         style={{
           width: '100%',
           maxWidth: '500px',
-          borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
           border: 'none'
         }}
         bodyStyle={{ padding: '40px' }}
@@ -473,12 +465,14 @@ const ForgotPassword: React.FC = () => {
 
         {/* 系统标题 */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>🔐</div>
+          <div style={{ marginBottom: '10px' }}>
+            <img className="register-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
+          </div>
           <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
             重置密码
           </Title>
           <Text type="secondary">
-            找回您的PSI管理系统账户
+            找回您的 lifei PSI 账户
           </Text>
         </div>
 

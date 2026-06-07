@@ -254,9 +254,11 @@ const MainLayout: React.FC = () => {
       <Header className="app-header">
         <div className="app-header-inner">
           <div className="app-brand">
-            <span className="app-brand-icon"><AppstoreOutlined /></span>
+            <span className="app-brand-icon">
+              <img className="app-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
+            </span>
             <div>
-              <strong>PSI管理系统</strong>
+              <strong>lifei PSI</strong>
               <span>销售 / 采购 / 库存 / 财务</span>
             </div>
           </div>
@@ -306,7 +308,7 @@ const MainLayout: React.FC = () => {
       </Layout>
       
       <Footer className="app-footer">
-        PSI管理系统 ©{new Date().getFullYear()} Created by lifei
+        lifei PSI ©{new Date().getFullYear()} Created by lifei
       </Footer>
     </Layout>
   );

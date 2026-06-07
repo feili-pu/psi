@@ -156,12 +156,12 @@ const Login: React.FC = () => {
       <div className="auth-panel">
         <section className="auth-brand-panel">
           <div className="auth-brand-mark">
-            <BarChartOutlined />
+            <img className="auth-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
           </div>
           <div>
             <Text className="auth-eyebrow">PSI BUSINESS SUITE</Text>
             <Title level={1} className="auth-title">
-              PSI管理系统
+              lifei PSI
             </Title>
             <Text className="auth-subtitle">
               销售、采购、库存与财务协同工作台
@@ -525,7 +525,7 @@ const Login: React.FC = () => {
         {/* 底部信息 */}
         <div className="auth-footer-note">
           <Text type="secondary">
-            © {new Date().getFullYear()} PSI管理系统. All rights reserved.
+            © {new Date().getFullYear()} lifei PSI. All rights reserved.
           </Text>
           <br />
           <Text type="secondary">

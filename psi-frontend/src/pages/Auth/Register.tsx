@@ -24,8 +24,7 @@ import {
   IdcardOutlined,
   BankOutlined,
   CheckCircleOutlined,
-  ArrowLeftOutlined,
-  AppstoreOutlined
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 import AuthService from '../../services/authService';
 
@@ -464,7 +463,7 @@ const Register: React.FC = () => {
           <Result
             icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
             title="注册成功！"
-            subTitle="您的账户已创建成功，现在可以开始使用PSI管理系统了"
+            subTitle="您的账户已创建成功，现在可以开始使用 lifei PSI 了"
             extra={[
               <Button type="primary" key="login" onClick={handleBackToLogin}>
                 立即登录
@@ -490,20 +489,12 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
+    <div className="auth-shell auth-flow-shell">
       <Card
+        className="auth-flow-card"
         style={{
           width: '100%',
           maxWidth: '600px',
-          borderRadius: '12px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
           border: 'none'
         }}
         bodyStyle={{ padding: '40px' }}
@@ -522,11 +513,11 @@ const Register: React.FC = () => {
 
         {/* 系统标题 */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '44px', marginBottom: '8px', color: '#0f766e' }}>
-            <AppstoreOutlined />
+          <div style={{ marginBottom: '10px' }}>
+            <img className="register-brand-logo" src="/lifei-psi.svg" alt="lifei PSI" />
           </div>
           <Title level={2} style={{ margin: 0, color: '#1f2937' }}>
-            注册PSI管理系统
+            注册 lifei PSI
           </Title>
           <Text type="secondary">
             创建您的企业管理账户
@@ -557,7 +548,7 @@ const Register: React.FC = () => {
             </Text>
             <br />
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              © {new Date().getFullYear()} PSI管理系统. Created by lifei.
+              © {new Date().getFullYear()} lifei PSI. Created by lifei.
             </Text>
           </div>
         )}
