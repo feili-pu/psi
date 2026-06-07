@@ -1280,9 +1280,9 @@ SELECT r.id, p.id
 FROM sys_role r, permissions p 
 WHERE r.role_code = 'PURCHASE_STAFF' 
 AND p.permission_code IN (
-    'purchase:request:view', 'purchase:request:create', 'purchase:request:update',
-    'purchase:inquiry:view', 'purchase:inquiry:create',
-    'purchase:quotation:view', 'purchase:order:view'
+    'purchase:request:read', 'purchase:request:create', 'purchase:request:update',
+    'purchase:inquiry:read', 'purchase:inquiry:create',
+    'purchase:quotation:read', 'purchase:order:read'
 );
 
 -- 为仓库主管角色分配权限
@@ -1301,7 +1301,7 @@ SELECT r.id, p.id
 FROM sys_role r, permissions p 
 WHERE r.role_code = 'WAREHOUSE_STAFF' 
 AND p.permission_code IN (
-    'inventory:receipt:view', 'inventory:receipt:create', 'inventory:receipt:update',
+    'inventory:receipt:read', 'inventory:receipt:create', 'inventory:receipt:update',
     'inventory:check:view', 'inventory:check:create',
     'material:requisition:view', 'material:return:view',
     'product:receipt:view', 'serial:inventory:view', 'serial:receipt:view'
@@ -1322,8 +1322,8 @@ SELECT r.id, p.id
 FROM sys_role r, permissions p 
 WHERE r.role_code = 'FINANCE_STAFF' 
 AND p.permission_code IN (
-    'purchase:payable:view', 'purchase:payable:update',
-    'sales:statistics:view', 'purchase:statistics:view'
+    'purchase:payable:read', 'purchase:payable:update',
+    'sales:statistics:read', 'purchase:statistics:read'
 );
 
 

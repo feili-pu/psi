@@ -39,6 +39,37 @@ UPDATE serial_number_receipt SET status = 'PENDING' WHERE status IS NULL OR stat
 UPDATE purchase_payable SET status = 'UNPAID' WHERE status IS NULL OR status = '';
 UPDATE sales_receivable SET status = 'UNRECEIVED' WHERE status IS NULL OR status = '';
 
+-- Keep role grants aligned with actual backend permission codes.
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM sys_role r
+JOIN permissions p ON p.permission_code IN (
+    'purchase:request:read', 'purchase:request:create', 'purchase:request:update',
+    'purchase:inquiry:read', 'purchase:inquiry:create',
+    'purchase:quotation:read', 'purchase:order:read'
+)
+WHERE r.role_code = 'PURCHASE_STAFF';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM sys_role r
+JOIN permissions p ON p.permission_code IN (
+    'inventory:receipt:read', 'inventory:receipt:create', 'inventory:receipt:update',
+    'inventory:check:view', 'inventory:check:create',
+    'material:requisition:view', 'material:return:view',
+    'product:receipt:view', 'serial:inventory:view', 'serial:receipt:view'
+)
+WHERE r.role_code = 'WAREHOUSE_STAFF';
+
+INSERT IGNORE INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM sys_role r
+JOIN permissions p ON p.permission_code IN (
+    'purchase:payable:read', 'purchase:payable:update',
+    'sales:statistics:read', 'purchase:statistics:read'
+)
+WHERE r.role_code = 'FINANCE_STAFF';
+
 -- 3. Recalculate document totals from their detail rows.
 UPDATE sales_quotation q
 JOIN (
