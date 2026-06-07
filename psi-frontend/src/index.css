@@ -2,10 +2,9 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #111827;
   background: #f4f7f6;
-  --browser-top-offset: 44px;
-  --auth-top-padding: max(var(--browser-top-offset), calc(24px + env(safe-area-inset-top, 0px)));
-  --auth-bottom-padding: calc(32px + env(safe-area-inset-bottom, 0px));
-  --app-top-padding: max(44px, env(safe-area-inset-top, 0px));
+  --auth-top-padding: calc(16px + env(safe-area-inset-top, 0px));
+  --auth-bottom-padding: calc(16px + env(safe-area-inset-bottom, 0px));
+  --app-top-padding: env(safe-area-inset-top, 0px);
   --app-bottom-padding: env(safe-area-inset-bottom, 0px);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -75,7 +74,7 @@ a {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: var(--auth-top-padding) 32px var(--auth-bottom-padding);
+  padding: var(--auth-top-padding) 24px var(--auth-bottom-padding);
   overflow: auto;
   background:
     linear-gradient(90deg, rgba(15, 118, 110, 0.08) 1px, transparent 1px),
@@ -610,8 +609,8 @@ a {
 @media (max-width: 920px) {
   .auth-shell {
     align-items: flex-start;
-    --auth-top-padding: max(42px, calc(18px + env(safe-area-inset-top, 0px)));
-    --auth-bottom-padding: calc(18px + env(safe-area-inset-bottom, 0px));
+    --auth-top-padding: calc(12px + env(safe-area-inset-top, 0px));
+    --auth-bottom-padding: calc(12px + env(safe-area-inset-bottom, 0px));
     padding: var(--auth-top-padding) 18px var(--auth-bottom-padding);
     overflow: auto;
   }
@@ -622,11 +621,36 @@ a {
   }
 
   .auth-brand-panel {
-    padding: 28px;
+    padding: 20px 22px;
+    justify-content: flex-start;
   }
 
   .auth-metrics {
-    margin: 28px 0;
+    display: none;
+  }
+
+  .auth-status-card {
+    display: none;
+  }
+
+  .auth-brand-mark {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 12px;
+  }
+
+  .auth-brand-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .auth-title {
+    font-size: 28px !important;
+  }
+
+  .auth-subtitle {
+    margin-top: 8px;
+    font-size: 14px;
   }
 
   .auth-card .ant-card-body {
