@@ -198,9 +198,10 @@ const SalesStatistics: React.FC = () => {
       ),
     },
     {
-      title: '产品名称',
-      dataIndex: 'productName',
-      key: 'productName',
+      title: '产品/规格',
+      dataIndex: 'groupName',
+      key: 'groupName',
+      render: (text: string, record) => text || record.productName || '-',
     },
     {
       title: '销售金额',
@@ -657,7 +658,7 @@ const SalesStatistics: React.FC = () => {
                 <Table
                   columns={productColumns}
                   dataSource={productSummary}
-                  rowKey="productName"
+                  rowKey={(record) => record.groupKey || record.groupName || record.productName}
                   pagination={false}
                   size="small"
                 />

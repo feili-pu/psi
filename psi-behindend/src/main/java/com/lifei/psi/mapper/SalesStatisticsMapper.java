@@ -34,7 +34,8 @@ public interface SalesStatisticsMapper {
     @Select("SELECT " +
             "so.order_no, so.customer_name, so.salesperson, " +
             "DATE(so.order_date) as order_date, " +
-            "soi.product_name, soi.product_code, soi.quantity, " +
+            "CONCAT(soi.product_name, CASE WHEN COALESCE(soi.specification, '') <> '' THEN CONCAT(' / ', soi.specification) ELSE '' END) as product_name, " +
+            "soi.product_code, soi.quantity, " +
             "soi.unit_price, soi.amount as sales_amount, " +
             "COALESCE(pc.unit_cost, 0) as unit_cost, " +
             "COALESCE(pc.unit_cost * soi.quantity, 0) as total_cost, " +
@@ -105,8 +106,10 @@ public interface SalesStatisticsMapper {
 
     // 按物料汇总
     @Select("SELECT " +
-            "soi.product_code as group_key, " +
-            "CONCAT(soi.product_name, '(', COALESCE(soi.product_code, ''), ')') as group_name, " +
+            "CONCAT(COALESCE(soi.product_code, ''), '|', COALESCE(soi.specification, '')) as group_key, " +
+            "CONCAT(soi.product_name, " +
+            "CASE WHEN COALESCE(soi.specification, '') <> '' THEN CONCAT(' / ', soi.specification) ELSE '' END, " +
+            "CASE WHEN COALESCE(soi.product_code, '') <> '' THEN CONCAT(' (', soi.product_code, ')') ELSE '' END) as group_name, " +
             "COUNT(DISTINCT so.id) as order_count, " +
             "COALESCE(SUM(soi.amount), 0) as total_amount, " +
             "COALESCE(SUM(soi.quantity), 0) as total_quantity, " +
@@ -118,7 +121,7 @@ public interface SalesStatisticsMapper {
             "INNER JOIN sales_order_item soi ON so.id = soi.order_id " +
             "LEFT JOIN product_cost pc ON soi.product_code = pc.product_code " +
             "WHERE DATE(so.order_date) BETWEEN #{startDate} AND #{endDate} " +
-            "GROUP BY soi.product_code, soi.product_name " +
+            "GROUP BY soi.product_code, soi.product_name, soi.specification " +
             "ORDER BY total_amount DESC")
     List<SalesSummaryReport> getSalesSummaryByProduct(@Param("startDate") LocalDate startDate, 
                                                      @Param("endDate") LocalDate endDate);

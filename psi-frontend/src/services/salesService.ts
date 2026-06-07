@@ -522,9 +522,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -550,9 +548,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -578,9 +574,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -606,9 +600,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -634,9 +626,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -662,9 +652,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -690,9 +678,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
@@ -718,9 +704,7 @@ export class SalesStatisticsService {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: AuthService.getAuthHeaders(),
     });
     
     const result = await response.json();
