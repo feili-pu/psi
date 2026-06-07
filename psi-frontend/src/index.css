@@ -5,6 +5,7 @@
   --auth-top-padding: calc(16px + env(safe-area-inset-top, 0px));
   --auth-bottom-padding: calc(16px + env(safe-area-inset-bottom, 0px));
   --app-top-padding: env(safe-area-inset-top, 0px);
+  --app-header-safe-top: max(32px, env(safe-area-inset-top, 0px));
   --app-bottom-padding: env(safe-area-inset-bottom, 0px);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -343,15 +344,15 @@ a {
 }
 
 .app-header {
-  height: 64px;
-  padding: 0 24px;
+  height: calc(64px + var(--app-header-safe-top));
+  padding: var(--app-header-safe-top) 24px 0;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
 }
 
 .app-header-inner {
-  height: 100%;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -658,7 +659,9 @@ a {
   }
 
   .app-header {
-    padding: 0 14px;
+    --app-header-safe-top: max(32px, env(safe-area-inset-top, 0px));
+    padding-right: 14px;
+    padding-left: 14px;
   }
 
   .app-brand span {
