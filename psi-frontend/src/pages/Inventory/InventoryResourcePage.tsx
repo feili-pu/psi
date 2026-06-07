@@ -57,6 +57,11 @@ type InventoryResourcePageProps = {
 const statusText: Record<string, { color: string; text: string }> = {
   PENDING: { color: 'blue', text: '待处理' },
   APPROVED: { color: 'cyan', text: '已审批' },
+  ISSUED: { color: 'green', text: '已发料' },
+  RETURNED: { color: 'green', text: '已退料' },
+  RECEIVED: { color: 'green', text: '已入库' },
+  ASSEMBLED: { color: 'green', text: '已组装' },
+  DISASSEMBLED: { color: 'green', text: '已拆解' },
   PROCESSED: { color: 'green', text: '已处理' },
   COMPLETED: { color: 'green', text: '已完成' },
   CANCELLED: { color: 'red', text: '已取消' },
